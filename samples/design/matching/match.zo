@@ -1,0 +1,10 @@
+fun main() {
+  m(1);
+}
+
+fun m(n: int): str {
+  match n {
+    1 => "one",
+    2 => "two",
+  }
+}

@@ -1,0 +1,9 @@
+macro foo ()
+macro bar {}
+macro foobar []
+
+#foo();
+#bar{};
+#foobar[];
+
+fun main() {}

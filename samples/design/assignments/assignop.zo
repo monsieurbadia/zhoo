@@ -1,0 +1,15 @@
+fun main() {
+  mut x: real = 0.0;
+
+  x += 1.0;
+  x -= 1.0;
+  x *= 1.0;
+  x /= 1.0;
+  x %= 1.0;
+  x ^= 1.0;
+
+  mut y: bool = true;
+
+  y &= false;
+  y |= true;
+}

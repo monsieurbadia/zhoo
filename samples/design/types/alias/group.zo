@@ -1,0 +1,10 @@
+type Status {
+  success: int,
+  failure: int,
+}
+
+fun main() {
+  let status: Status = Status { success: 0, failure: 1 };
+
+  status.success
+}

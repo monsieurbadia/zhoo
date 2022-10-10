@@ -1,0 +1,8 @@
+fun main(): int {
+  imu x: int = 0;
+  imu y: int = 2;
+
+  println("hello, hello");
+
+  x + y
+}

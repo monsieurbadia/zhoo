@@ -1,0 +1,3 @@
+wasm fun main() {
+  -- do something
+}

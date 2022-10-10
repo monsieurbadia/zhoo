@@ -1,0 +1,4 @@
+unit {
+  -- a test case
+  test bar_mock() {}
+}

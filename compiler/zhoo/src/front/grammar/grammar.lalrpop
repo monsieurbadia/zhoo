@@ -1,0 +1,525 @@
+use crate::front::parser::tree::ast::*;
+use crate::front::parser::tree::ty::{Ty, TyKind};
+use crate::util::span::{Span, Spanned};
+use crate::front::parser::tree::{pbox, PBox};
+
+use std::str::FromStr;
+
+grammar;
+
+pub Program: Vec<PBox<Stmt>> = {
+  <stmts:Stmt*> => stmts,
+}
+
+StmtBind: PBox<Stmt> = {
+  <stmt:Stmt> => stmt,
+};
+
+Stmt: PBox<Stmt> = {
+  StmtVal,
+  StmtBlock,
+  StmtView,
+};
+
+StmtView: PBox<Stmt> = {
+  StmtTyAlias,
+};
+
+StmtVal: PBox<Stmt> = {
+  <lo:@L> "val" <decl:ValDecl> ";" <hi:@R> => pbox(
+    Stmt::new(StmtKind::Val(decl), Span::new(lo, hi))
+  ),
+};
+ValDecl: PBox<Decl> = {
+  <lo:@L> <pattern:Pattern> ":" <ty:Ty> "=" <expr:Expr> <hi:@R> => pbox(Decl::new(Mutability::No, DeclKind::Val, pattern, Some(ty), expr, Span::new(lo, hi))),
+  <lo:@L> <pattern:Pattern> ":=" <expr:Expr> <hi:@R> => pbox(Decl::new(Mutability::No, DeclKind::Val, pattern, None, expr, Span::new(lo, hi))),
+};
+
+StmtBlock: PBox<Stmt> = {
+  StmtEnum,
+  StmtStruct,
+  StmtFun,
+  StmtUnit,
+};
+
+StmtTyAlias: PBox<Stmt> = {
+  <lo:@L> <ty_alias:TyAlias> <hi:@R> => pbox(Stmt::new(StmtKind::TyAlias(ty_alias), Span::new(lo, hi)))
+};
+TyAlias: PBox<TyAlias> = {
+  <lo:@L> <public:public> "type" <identifier:Identifier> <kind:TyAliasKind> <hi:@R> => pbox(TyAlias::new(public, identifier, kind, Span::new(lo, hi))),
+};
+TyAliasKind: TyAliasKind = {
+  "=" <ty:Ty> ";" => TyAliasKind::Single(ty),
+  "{" <tys:Comma<TyAliasField>> "}" => TyAliasKind::Group(tys),
+};
+TyAliasField: PBox<TyAliasField> = {
+  <lo:@L> <identifier:Identifier> ":" <ty:Ty> <hi:@R> => pbox(TyAliasField::new(identifier, ty, Span::new(lo, hi))),
+};
+
+StmtEnum: PBox<Stmt> = {
+  <lo:@L> <enum_def:Enum> <hi:@R> => pbox(Stmt::new(StmtKind::Enum(enum_def), Span::new(lo, hi))),
+};
+Enum: PBox<Enum> = {
+ <lo:@L> <public:public> "enum" <identifier:Identifier> "{" <enum_variant:Comma<EnumVariant>> "}" <hi:@R> => pbox(Enum::new(public, identifier, enum_variant, Span::new(lo, hi))),
+};
+EnumVariant: PBox<EnumVariant> = {
+  <lo:@L> <identifier:Identifier> <enum_args:EnumVariantArg?> <hi:@R> => pbox(EnumVariant::new(identifier, enum_args, Span::new(lo, hi))),
+};
+EnumVariantArg: PBox<EnumVariantArg> = {
+  <lo:@L> ":" <expr:Expr> <hi:@R> => pbox(EnumVariantArg::new(expr, Span::new(lo, hi))),
+};
+
+StmtStruct: PBox<Stmt> = {
+  <lo:@L> <struct_def:Struct> <hi:@R> => pbox(Stmt::new(StmtKind::Struct(struct_def), Span::new(lo, hi))),
+};
+Struct: PBox<Struct> = {
+  <lo:@L> <public:public> "struct" <identifier:Identifier> <kind:StructDeclArgs> <hi:@R> => pbox(Struct::new(public, identifier, kind, Span::new(lo, hi))),
+  <lo:@L> <public:public> "struct" <identifier:Identifier> <kind:StructTupleArgs> <hi:@R> => pbox(Struct::new(public, identifier, kind, Span::new(lo, hi))),
+  <lo:@L> <public:public> "struct" <identifier:Identifier> <kind:StructInit> ";" <hi:@R> => pbox(Struct::new(public, identifier, kind, Span::new(lo, hi))),
+};
+StructInit: StructKind = {
+  () => StructKind::Init,
+};
+StructDeclArgs: StructKind = {
+  "{" <fields:StructDeclFields> "}" => StructKind::Decl(fields),
+};
+StructTupleArgs: StructKind = {
+  "(" <fields:StructTupleFields> ")" => StructKind::Tuple(fields),
+};
+StructDeclFields: Vec<PBox<StructDeclField>> = {
+  <fields:Comma<StructDeclField>> => fields,
+};
+StructTupleFields: Vec<PBox<StructTupleField>> = {
+  <fields:Comma<StructTupleField>> => fields,
+};
+StructDeclField: PBox<StructDeclField> = {
+  <lo:@L> <public:public> <identifier:Identifier> ":" <ty:Ty> <hi:@R> => pbox(StructDeclField::new(public, identifier, ty, Span::new(lo, hi))),
+};
+StructTupleField: PBox<StructTupleField> = {
+  <lo:@L> <public:public> <ty:Ty> <hi:@R> => pbox(StructTupleField::new(public, ty, Span::new(lo, hi))),
+};
+
+StmtFun: PBox<Stmt> = {
+  <lo:@L> <fun:Fun> <hi:@R> => pbox(Stmt::new(StmtKind::Fun(fun), Span::new(lo, hi))),
+};
+Fun: PBox<Fun> = {
+  <lo:@L> <public:public> <asyncness:asyncness> <unsafeness:unsafeness> <wasm:wasm> "fun" <prototype:Prototype> <block:Block> <hi:@R> => pbox(
+    Fun::new(public, asyncness, unsafeness, wasm, prototype, block, Span::new(lo, hi))
+  ),
+};
+Prototype: Prototype = {
+  <lo:@L> <identifier:Identifier> "(" <args:Comma<Arg>> ")" <return_ty:ReturnTy> <hi:@R> => Prototype::new(identifier, args, return_ty, Span::new(lo, hi)),
+};
+Arg: PBox<Arg> = {
+  <lo:@L> <pattern:Pattern> ":" <ty:Ty> <hi:@R> => pbox(Arg::new(pattern, ty, Span::new(lo, hi))),
+};
+ReturnTy: ReturnTy = {
+  ":" <ty:Ty> => ReturnTy::Ty(ty),
+  <lo:@L> () <hi:@R> => ReturnTy::Default(Span::new(lo, hi)),
+};
+
+StmtUnit: PBox<Stmt> = {
+  <lo:@L> <unit:Unit> <hi:@R> => pbox(Stmt::new(StmtKind::Unit(unit), Span::new(lo, hi))),
+};
+Unit: PBox<Unit> = {
+  <lo:@L> "unit" "{" <binds:Comma<StmtBind>> <mocks:Mock*> <tests:Test*> "}" <hi:@R> => pbox(Unit::new(binds, mocks, tests, Span::new(lo, hi))),
+};
+Mock: PBox<Fun> = {
+  <lo:@L> "mock" <prototype:Prototype> <block:Block> <hi:@R> => pbox(Fun::new(Public::No, Async::No, Unsafe::No, Wasm::No, prototype, block, Span::new(lo, hi))),
+};
+Test: PBox<Fun> = {
+  <lo:@L> "test" <prototype:Prototype> <block:Block> <hi:@R> => pbox(Fun::new(Public::No, Async::No, Unsafe::No, Wasm::No, prototype, block, Span::new(lo, hi))),
+};
+
+ExprImu: PBox<Expr> = {
+  <lo:@L> <decl:Imu> <hi:@R> => pbox(Expr::new(ExprKind::Decl(decl), Span::new(lo, hi))),
+};
+Imu: PBox<Decl> = {
+  <lo:@L> "imu" <pattern:Pattern> ":" <ty:Ty> "=" <expr:Expr> <hi:@R> => pbox(
+    Decl::new(Mutability::No, DeclKind::Imu, pattern, Some(ty), expr, Span::new(lo, hi))
+  ),
+  <lo:@L> "imu" <pattern:Pattern> ":=" <expr:Expr> <hi:@R> => pbox(
+    Decl::new(Mutability::No, DeclKind::Imu, pattern, None, expr, Span::new(lo, hi))
+  ),
+};
+
+ExprMut: PBox<Expr> = {
+  <lo:@L> <decl:Mut> <hi:@R> => pbox(Expr::new(ExprKind::Decl(decl), Span::new(lo, hi))),
+};
+Mut: PBox<Decl> = {
+  <lo:@L> "mut" <pattern:Pattern> ":" <ty:Ty> "=" <expr:Expr> <hi:@R> => pbox(
+    Decl::new(Mutability::Yes, DeclKind::Mut, pattern, Some(ty), expr, Span::new(lo, hi))
+  ),
+  <lo:@L> "mut" <pattern:Pattern> ":=" <expr:Expr> <hi:@R> => pbox(
+    Decl::new(Mutability::Yes, DeclKind::Mut, pattern, None, expr, Span::new(lo, hi))
+  ),
+};
+
+Ty: PBox<Ty> = {
+  TyPrim,
+  TyFun,
+  TyArray,
+  TyTuple,
+};
+TyPrim: PBox<Ty> = {
+
+  <path:Path<Epsilon>> => pbox(Ty::from(path)),
+};
+TyFun: PBox<Ty> = {
+  <lo:@L> "Fn" "(" <tys:Comma<Ty>> ")" ":" <ty:Ty> <hi:@R> => pbox(Ty::new(TyKind::Fn(tys, ty), Span::new(lo, hi))),
+};
+TyArray: PBox<Ty> = {
+  <lo:@L> <indexed:TyPrim> "[" <size:LiteralInt> "]" <hi:@R> => pbox(Ty::new(TyKind::Array(indexed, size), Span::new(lo, hi))),
+};
+TyTuple: PBox<Ty> = {
+  <lo:@L> "(" <tys:Comma<TyPrim>> ")" <hi:@R> => pbox(Ty::new(TyKind::Tuple(tys), Span::new(lo, hi))),
+};
+
+Exprs: Vec<PBox<Expr>> = {
+  <mut v:ExprIntermediary*> <s:Expr?> => match s {
+    None => v,
+    Some(s) => {
+      v.push(s);
+      v
+    }
+  },
+};
+ExprIntermediary: PBox<Expr> = {
+  <expr:Expr> ";" => expr,
+  <lo:@L> <expr:ExprStmtNoSemi> <hi:@R> => expr,
+};
+
+ExprStmtNoSemi: PBox<Expr> = {
+  ExprStmt,
+  ExprIf,
+  ExprLoop,
+  ExprWhile,
+};
+
+Expr: PBox<Expr> = {
+  ExprImu,
+  ExprMut,
+  ExprOr,
+  ExprAssign,
+  ExprWhen,
+  ExprLambda,
+};
+
+ExprLoop: PBox<Expr> = {
+  <lo:@L> "loop" <block:BlockOrExprArrow> <hi:@R> => pbox(Expr::new(ExprKind::Loop(block), Span::new(lo, hi))),
+};
+ExprWhile: PBox<Expr> = {
+  <lo:@L> "while" <condition:Expr> <block:BlockOrExprArrow> <hi:@R> => pbox(Expr::new(ExprKind::While(condition, block), Span::new(lo, hi))),
+};
+ExprUntil: PBox<Expr> = {
+  <lo:@L> "until" <condition:Expr> <block:BlockOrExprArrow> <hi:@R> => pbox(Expr::new(ExprKind::While(condition, block), Span::new(lo, hi))),
+};
+BlockOrExprArrow: PBox<Block> = {
+  <block:Block> => block,
+  <lo:@L> "->" <expr:Expr>  ";" <hi:@R> => pbox(
+    Block::new(
+      vec![expr],
+      Span::new(lo, hi),
+    )
+  ),
+};
+
+ExprStmt: PBox<Expr> = {
+  <lo:@L> <stmt:Stmt> <hi:@R>  => pbox(Expr::new(ExprKind::Stmt(stmt), Span::new(lo, hi)))
+};
+
+ExprControl: PBox<Expr> = {
+  <lo:@L> "return" <expr:Expr?> <hi:@R> => pbox(Expr::new(ExprKind::Return(expr), Span::new(lo, hi))),
+  <lo:@L> "break" <expr:Expr?> <hi:@R> => pbox(Expr::new(ExprKind::Break(expr), Span::new(lo, hi))),
+  <lo:@L> "continue" <hi:@R> => pbox(Expr::new(ExprKind::Continue, Span::new(lo, hi))),
+};
+
+ExprLambda: PBox<Expr> = {
+  <lo:@L> "fn" "(" <inputs:Comma<Identifier>> ")" <expr:BlockExprOrExprArrow> <hi:@R> => pbox(Expr::new(ExprKind::Lambda(inputs, expr), Span::new(lo, hi))),
+};
+BlockExprOrExprArrow: PBox<Expr> = {
+  <lo:@L> <block:Block> <hi:@R> => pbox(Expr::new(ExprKind::Block(block), Span::new(lo, hi))),
+  "->" <expr:Expr> <hi:@R> => expr,
+};
+
+ExprIf: PBox<Expr> = {
+  <lo:@L> "if" <condition:Expr> <consequence:ExprBlock> <hi:@R> => pbox(Expr::new(ExprKind::IfElse(condition, consequence, None), Span::new(lo, hi))),
+  <lo:@L> "if" <condition:Expr> <consequence:ExprBlock> "else" <alternative:BlockOrIf> <hi:@R> => pbox(Expr::new(ExprKind::IfElse(condition, consequence, Some(alternative)), Span::new(lo, hi))),
+};
+BlockOrIf: PBox<Expr> = {
+  ExprBlock,
+  ExprIf,
+};
+ExprBlock: PBox<Expr> = {
+  <lo:@L> <block:Block> <hi:@R> => pbox(Expr::new(ExprKind::Block(block), Span::new(lo, hi))),
+};
+
+Block: PBox<Block> = {
+  <lo:@L> "{" <stmts:Exprs> "}" <hi:@R> => pbox(Block::new(stmts, Span::new(lo, hi))),
+};
+
+ExprWhen: PBox<Expr> = {
+  <lo:@L>
+    "when" <condition:Expr>
+    "?" <consequence:Expr>
+    ":" <alternative:Expr>
+  <hi:@R>
+  => pbox(Expr::new(ExprKind::When(condition, consequence, alternative), Span::new(lo, hi))),
+};
+
+ExprAssign: PBox<Expr> = {
+  ExprAssignBinOp,
+  <lo:@L> <lhs:Identifier> <op:AssignOp> <rhs:Expr> <hi:@R> => pbox(Expr::new(ExprKind::Assign(lhs, op, rhs), Span::new(lo, hi))),
+};
+AssignOp: BinOp = {
+  <lo:@L> "=" <hi:@R> => Spanned::new(BinOpKind::Eq, Span::new(lo, hi)),
+};
+
+ExprAssignBinOp: PBox<Expr> = {
+  <lo:@L> <lhs:Identifier> <op:AssignBinOp> <rhs:Expr> <hi:@R> => pbox(Expr::new(ExprKind::AssignOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+AssignBinOp: BinOp = {
+  <lo:@L> "<<=" <hi:@R> => Spanned::new(BinOpKind::Shl, Span::new(lo, hi)),
+  <lo:@L> "=>>" <hi:@R> => Spanned::new(BinOpKind::Shr, Span::new(lo, hi)),
+  <lo:@L> "-=" <hi:@R> => Spanned::new(BinOpKind::Sub, Span::new(lo, hi)),
+  <lo:@L> "&=" <hi:@R> => Spanned::new(BinOpKind::And, Span::new(lo, hi)),
+  <lo:@L> "|=" <hi:@R> => Spanned::new(BinOpKind::BitAnd, Span::new(lo, hi)),
+  <lo:@L> "+=" <hi:@R> => Spanned::new(BinOpKind::Add, Span::new(lo, hi)),
+  <lo:@L> "*=" <hi:@R> => Spanned::new(BinOpKind::Mul, Span::new(lo, hi)),
+  <lo:@L> "/=" <hi:@R> => Spanned::new(BinOpKind::Div, Span::new(lo, hi)),
+  <lo:@L> "^=" <hi:@R> => Spanned::new(BinOpKind::BitXor, Span::new(lo, hi)),
+  <lo:@L> "%=" <hi:@R> => Spanned::new(BinOpKind::Rem, Span::new(lo, hi)),
+};
+
+ExprOr: PBox<Expr> = {
+  ExprAnd,
+  <lo:@L> <lhs:ExprOr> <op:OrOp> <rhs:ExprAnd> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+OrOp: BinOp = {
+  <lo:@L> "||" <hi:@R> => Spanned::new(BinOpKind::Or, Span::new(lo, hi)),
+};
+
+ExprAnd: PBox<Expr> = {
+  ExprComp,
+  <lo:@L> <lhs:ExprAnd> <op:AndOp> <rhs:ExprComp> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+AndOp: BinOp = {
+  <lo:@L> "&&" <hi:@R> => Spanned::new(BinOpKind::And, Span::new(lo, hi)),
+};
+
+ExprComp: PBox<Expr> = {
+  ExprBitOr,
+  <lo:@L> <lhs:ExprComp> <op:CompOp> <rhs:ExprBitOr> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+CompOp: BinOp = {
+  <lo:@L> "==" <hi:@R> => Spanned::new(BinOpKind::Eq, Span::new(lo, hi)),
+  <lo:@L> "!=" <hi:@R> => Spanned::new(BinOpKind::Ne, Span::new(lo, hi)),
+  <lo:@L> "<" <hi:@R> => Spanned::new(BinOpKind::Lt, Span::new(lo, hi)),
+  <lo:@L> ">" <hi:@R> => Spanned::new(BinOpKind::Gt, Span::new(lo, hi)),
+  <lo:@L> "<=" <hi:@R> => Spanned::new(BinOpKind::Le, Span::new(lo, hi)),
+  <lo:@L> ">=" <hi:@R> => Spanned::new(BinOpKind::Ge, Span::new(lo, hi)),
+};
+
+ExprBitOr: PBox<Expr> = {
+  ExprBitXor,
+  <lo:@L> <lhs:ExprBitOr> <op:BitOrOp> <rhs:ExprBitXor> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+BitOrOp: BinOp = {
+  <lo:@L> "|" <hi:@R> => Spanned::new(BinOpKind::BitOr, Span::new(lo, hi)),
+};
+
+ExprBitXor: PBox<Expr> = {
+  ExprBitAnd,
+  <lo:@L> <lhs:ExprBitXor> <op:BitXorOp> <rhs:ExprBitAnd> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+BitXorOp: BinOp = {
+  <lo:@L> "^" <hi:@R> => Spanned::new(BinOpKind::BitXor, Span::new(lo, hi)),
+};
+
+ExprBitAnd: PBox<Expr> = {
+  ExprShift,
+  <lo:@L> <lhs:ExprBitAnd> <op:BitAndOp> <rhs:ExprShift> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+BitAndOp: BinOp = {
+  <lo:@L> "&" <hi:@R> => Spanned::new(BinOpKind::BitAnd, Span::new(lo, hi)),
+};
+
+ExprShift: PBox<Expr> = {
+  ExprSum,
+  <lo:@L> <lhs:ExprShift> <op:ShiftOp> <rhs:ExprSum> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+ShiftOp: BinOp = {
+  <lo:@L> "<<" <hi:@R> => Spanned::new(BinOpKind::Shl, Span::new(lo, hi)),
+  <lo:@L> ">>" <hi:@R> => Spanned::new(BinOpKind::Shr, Span::new(lo, hi)),
+};
+
+ExprSum: PBox<Expr> = {
+  ExprProd,
+  <lo:@L> <lhs:ExprSum> <op:SumOp> <rhs:ExprProd> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+SumOp: BinOp = {
+  <lo:@L> "+" <hi:@R> => Spanned::new(BinOpKind::Add, Span::new(lo, hi)),
+  <lo:@L> "-" <hi:@R> => Spanned::new(BinOpKind::Sub, Span::new(lo, hi)),
+};
+
+ExprProd: PBox<Expr> = {
+  ExprRange,
+  <lo:@L> <lhs:ExprProd> <op:ProdOp> <rhs:ExprRange> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+ProdOp: BinOp = {
+  <lo:@L> "*" <hi:@R> => Spanned::new(BinOpKind::Mul, Span::new(lo, hi)),
+  <lo:@L> "/" <hi:@R> => Spanned::new(BinOpKind::Div, Span::new(lo, hi)),
+  <lo:@L> "%" <hi:@R> => Spanned::new(BinOpKind::Rem, Span::new(lo, hi)),
+};
+
+ExprRange: PBox<Expr> = {
+  ExprAs,
+  <lo:@L> <lhs:ExprRange> <op:RangeOp> <rhs:ExprAs> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+RangeOp: BinOp = {
+  <lo:@L> ".." <hi:@R> => Spanned::new(BinOpKind::Range, Span::new(lo, hi)),
+};
+
+ExprAs: PBox<Expr> = {
+  ExprUnOp,
+  <lo:@L> <lhs:ExprAs> <op:AsOp> <rhs:ExprUnOp> <hi:@R> => pbox(Expr::new(ExprKind::BinOp(lhs, op, rhs), Span::new(lo, hi))),
+};
+AsOp: BinOp = {
+  <lo:@L> "as" <hi:@R> => Spanned::new(BinOpKind::As, Span::new(lo, hi)),
+};
+
+ExprUnOp: PBox<Expr> = {
+  ExprSuffix,
+  <lo:@L> <op:UnOp> <rhs:ExprSuffix> <hi:@R> => pbox(Expr::new(ExprKind::UnOp(op, rhs), Span::new(lo, hi))),
+};
+UnOp: UnOp = {
+  <lo:@L> "-" <hi:@R> => Spanned::new(UnOpKind::Neg, Span::new(lo, hi)),
+  <lo:@L> "!" <hi:@R> => Spanned::new(UnOpKind::Not, Span::new(lo, hi)),
+};
+
+ExprSuffix: PBox<Expr> = {
+  ExprAtom,
+  <lo:@L> <callee:ExprSuffix> "(" <args:Comma<Expr>>")" <hi:@R> => pbox(Expr::new(ExprKind::Call(callee, args), Span::new(lo, hi))),
+  <lo:@L> <identifier:ExprSuffix> "." <path:Path<"::">> <hi:@R> => pbox(Expr::new(ExprKind::MemberAccess(identifier, path), Span::new(lo, hi))),
+  <lo:@L> <identifier:ExprSuffix> "." <int:LiteralInteger> <hi:@R> => pbox(Expr::new(ExprKind::TupleAccess(identifier, int), Span::new(lo, hi))),
+  <lo:@L> <indexed:ExprSuffix> "[" <index:Expr> "]" <hi:@R> => pbox(Expr::new(ExprKind::Index(indexed, index), Span::new(lo, hi))),
+};
+
+ExprAtom: PBox<Expr> = {
+  Literal,
+  ExprPath,
+  ExprArray,
+  ExprTuple,
+};
+
+ExprArray: PBox<Expr> = {
+  <lo:@L> "[" <xs:Comma<Expr>> "]" <hi:@R> => pbox(Expr::new(ExprKind::Array(xs), Span::new(lo, hi))),
+};
+
+ExprTuple: PBox<Expr> = {
+  <lo:@L> "(" <xs:Comma<Expr>> ")" <hi:@R> => pbox(Expr::new(ExprKind::Tuple(xs), Span::new(lo, hi))),
+};
+
+ExprPath: PBox<Expr> = {
+  Path<"::">,
+};
+Path<Sep>: PBox<Expr> = {
+  Identifier,
+};
+
+Pattern: Pattern = {
+  <lo:@L> "_" <hi:@R> => Pattern::new(PatternKind::Underscore, Span::new(lo, hi)),
+  <lo:@L> <lit:Literal> <hi:@R> => Pattern::new(PatternKind::Lit(lit), Span::new(lo, hi)),
+  <lo:@L> <identifier:Identifier> <hi:@R> => Pattern::new(PatternKind::Identifier(identifier), Span::new(lo, hi)),
+};
+
+Identifier: PBox<Expr> = {
+  <lo:@L> <identifier:Id> <hi:@R> => pbox(Expr::new(ExprKind::Identifier(identifier), Span::new(lo, hi))),
+};
+
+Id: String = <s:r"[a-zA-Z_][a-zA-Z0-9_]*"> => String::from(s);
+
+Literal: PBox<Expr> = {
+  <lo:@L> <lit:Lit> <hi:@R> => pbox(Expr::new(ExprKind::Lit(lit), Span::new(lo, hi))),
+  LiteralInteger,
+};
+
+LiteralInteger: PBox<Expr> = {
+  <lo:@L> <int:LitInt> <hi:@R> => pbox(Expr::new(ExprKind::Lit(int), Span::new(lo, hi))),
+};
+
+Lit: PBox<Lit> = {
+  LitBool,
+  LitStr,
+  LitReal,
+  LitIntBin,
+  LitIntOct,
+  LitIntHex,
+};
+
+LitBool: PBox<Lit> = <lo:@L> <boolean:LiteralBool> <hi:@R> => pbox(Lit::new(LitKind::Bool(boolean), Span::new(lo, hi)));
+LitStr: PBox<Lit> = <lo:@L> <string:LiteralStr> <hi:@R> => pbox(Lit::new(LitKind::Str(string), Span::new(lo, hi)));
+LitReal: PBox<Lit> = <lo:@L> <real:LiteralReal> <hi:@R> => pbox(Lit::new(LitKind::Real(real), Span::new(lo, hi)));
+LitIntBin: PBox<Lit> = <lo:@L> <bin:LiteralIntBin> <hi:@R> => pbox(Lit::new(LitKind::Int(bin), Span::new(lo, hi)));
+LitIntOct: PBox<Lit> = <lo:@L> <oct:LiteralIntOct> <hi:@R> => pbox(Lit::new(LitKind::Int(oct), Span::new(lo, hi)));
+LitIntHex: PBox<Lit> = <lo:@L> <hex:LiteralIntHex> <hi:@R> => pbox(Lit::new(LitKind::Int(hex), Span::new(lo, hi)));
+LitInt: PBox<Lit> = <lo:@L> <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(int), Span::new(lo, hi)));
+
+LiteralBool: bool = {
+  "true" => true,
+  "false" => false,
+};
+
+LiteralStr: String = <s:r#""(?:[^"\\]|\\.)*""#> => s[1..(s.len() - 1)].to_string();
+LiteralReal: f64 = <num:r"[0-9_]\.[0-9_]+"> => f64::from_str(num).unwrap();
+LiteralIntBin: i64 = <num:r"0b[0-1_]+"> => i64::from_str_radix(num.replace('_', "").trim_start_matches("0b"), 2).unwrap();
+LiteralIntOct: i64 = <num:r"0o[0-7_]+"> => i64::from_str_radix(num.replace('_', "").trim_start_matches("0o"), 8).unwrap();
+LiteralIntHex: i64 = <num:r"0x[0-9a-fA-F_]+"> => i64::from_str_radix(num.replace('_', "").trim_start_matches("0x"), 16).unwrap();
+LiteralInt: i64 = <num:r"[0-9][0-9_]*"> => i64::from_str(&num.replace('_', "")).unwrap();
+
+public: Public = {
+  <lo:@L> "pub" <hi:@R> => Public::Yes(Span::new(lo, hi)),
+  () => Public::No,
+};
+asyncness: Async = {
+  <lo:@L> "async" <hi:@R> => Async::Yes(Span::new(lo, hi)),
+  () => Async::No,
+};
+unsafeness: Unsafe = {
+  <lo:@L> "unsafe" <hi:@R> => Unsafe::Yes(Span::new(lo, hi)),
+  () => Unsafe::No,
+};
+wasm: Wasm = {
+  <lo:@L> "wasm" <hi:@R> => Wasm::Yes(Span::new(lo, hi)),
+  () => Wasm::No,
+};
+
+#[inline]
+Comma<E>: Vec<E> = {
+  Sep<E, ",">,
+};
+
+#[inline]
+Epsilon: () = {
+  (),
+};
+
+Sep<T, S>: Vec<T> = {
+  <mut v:(<T> S)*> <t:T?> => match t {
+    None => v,
+    Some(t) => {
+      v.push(t);
+      v
+    }
+  }
+};
+
+match {
+  r"\s*" => {},
+  // line comments
+  r"--[^\n\r]*[\n\r]*" => {},
+  // doc line comments
+  r"-!-[^\n\r]*[\n\r]*" => {},
+} else {
+  _
+}

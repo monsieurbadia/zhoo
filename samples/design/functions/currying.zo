@@ -1,0 +1,7 @@
+fun main(): int {
+  imu x := fn(x) -> fn(y) -> x + y;
+  imu y := x(1);
+  imu z := y(2);
+
+  z
+}

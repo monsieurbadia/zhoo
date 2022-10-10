@@ -1,0 +1,19 @@
+struct Foo {
+  bar: int,
+}
+
+impl Foo {
+  pub fn new(bar: int) -> Me {
+    Me { bar }
+  }
+
+  fn bar(me) -> int {
+    me.bar
+  }
+}
+
+fun main(): int {
+  imu foo = Foo::new(14);
+
+  foo.bar()
+}

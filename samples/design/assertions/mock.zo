@@ -1,0 +1,4 @@
+unit {
+  -- a mock function
+  mock foo_mock() {}
+}

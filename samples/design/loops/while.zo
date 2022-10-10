@@ -1,0 +1,5 @@
+fun main(): int {
+  mut x: int = 0;
+  while x < 3 -> x += 3;
+  x
+}

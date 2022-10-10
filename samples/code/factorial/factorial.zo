@@ -1,0 +1,11 @@
+fun factorial(x: int): int {
+  if x == 0 {
+    1
+  } else {
+    x * factorial(x-1)
+  }
+}
+
+fun main(): int {
+  factorial(23)
+}

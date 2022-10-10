@@ -1,0 +1,7 @@
+load a;
+load pack::a::b::c;
+
+load std::sys::(exit);
+load std::mem::(alloc, free);
+
+fun main() {}

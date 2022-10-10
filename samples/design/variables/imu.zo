@@ -1,0 +1,6 @@
+fun main(): int {
+  imu x: int = 1;
+  imu y := 2;
+
+  x * y
+}

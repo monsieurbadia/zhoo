@@ -1,0 +1,7 @@
+fun main() {
+  imu foo: int = 3;
+  imu bar: int = 10;
+  imu foobar: int = foo + bar;
+
+  foobar
+}

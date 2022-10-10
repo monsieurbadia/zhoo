@@ -1,0 +1,6 @@
+fun main(): int {
+  mut x: int = 1;
+  mut y := 2;
+
+  x * y
+}

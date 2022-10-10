@@ -1,0 +1,4 @@
+fun main() {
+  imu x := -1;
+  imu y := !true;
+}

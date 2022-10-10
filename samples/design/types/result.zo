@@ -1,0 +1,8 @@
+fun main() {
+  imu x: Result<str, Error> = Ok("done");
+
+  match x {
+    Ok(success) => println("{success}"),
+    Err(failure) => println("{failure}"),
+  }
+}

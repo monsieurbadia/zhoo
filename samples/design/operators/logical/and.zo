@@ -1,0 +1,7 @@
+fun main() {
+  if true && true {
+    println("yes");
+  } else {
+    println("no");
+  }
+}

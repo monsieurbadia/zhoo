@@ -1,0 +1,9 @@
+fun main() {
+  mut x := 0;
+
+  until x < 3 {
+    x += 1;
+  }
+
+  until x < 3 -> x += 1;
+}

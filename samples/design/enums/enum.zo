@@ -1,0 +1,13 @@
+pub enum Foo {}
+enum Bar {}
+
+enum FooBar {
+  Foo,
+  Bar = 0,
+}
+
+enum BarFoo {
+  Foo(str),
+  Bar(real),
+  FooBar,
+}

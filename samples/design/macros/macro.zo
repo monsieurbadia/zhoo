@@ -1,0 +1,17 @@
+pub macro foo ()
+macro foo ()
+macro foo (
+  () {}
+)
+
+pub macro bar {}
+macro bar {}
+macro bar {
+  () {}
+}
+
+pub macro foobar []
+macro foobar []
+macro foobar [
+  () {}
+]

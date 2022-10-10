@@ -1,0 +1,8 @@
+enum Foo {
+  Ok,
+  Err,
+}
+
+fun main() {
+  if x is Foo::Ok {}
+}

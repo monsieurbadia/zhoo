@@ -1,0 +1,7 @@
+fun main() {
+  imu x := $"
+foo bar
+  foobar
+    barfoo
+  "$;
+}

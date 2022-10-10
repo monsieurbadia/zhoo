@@ -1,0 +1,13 @@
+[workspace]
+members = [
+  "compiler/zhoo",
+  "library/core",
+]
+
+[workspace.package]
+version = "0.0.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"

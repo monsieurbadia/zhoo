@@ -1,0 +1,6 @@
+val x: int = 1;
+val y: int = 2;
+
+fun main(): int {
+  x * y
+}

@@ -1,0 +1,5 @@
+fun main(): int {
+  imu z: Fn(int, int): int = fn(x, y) -> x * y;
+
+  z(1, 2)
+}

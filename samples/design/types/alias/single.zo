@@ -1,0 +1,5 @@
+type Index = int;
+
+fun main() {
+  imu x: Index = 0;
+}

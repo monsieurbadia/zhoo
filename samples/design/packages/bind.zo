@@ -1,0 +1,4 @@
+bind a;
+pub bind b;
+
+fun main() {}

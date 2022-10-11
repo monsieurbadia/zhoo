@@ -7,7 +7,7 @@
 - statically-typed language
 - `hindley milner` type inference
 - high performance
-- `cranelift` backend
+- `cranelift` and `llvm` backend (dev and release)
 - user-friendly report messages
 - small binaries
 - metaprogramming
@@ -44,6 +44,27 @@ a good way to do unit tests with functionality adapted to the comfort of the pro
   <img src="./misc/overview/zhoo-unit-testing.png" />
 </p>
 
+## compiler phases
+
+for the moment the proof of concept has only two phases
+
+```
+           |--------|            |---------|
+source --> | parser | -- ast --> | codegen | --> exe
+           |--------|            |---------|
+```
+
+## start
+
+[Rust](https://www.rust-lang.org/tools/install) and [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) must be installed on your machine before.
+
+### cli
+
+| run       | description              | cmd                                                  | status |
+|:----------|:-------------------------|:-----------------------------------------------------|:-------|
+| `compile` | compile with `cranelift` | `cargo run -- compile --input <path>`                | ok     |
+| `compile` | compile with `llvm`      | `cargo run -- compile --input <path> --backend llvm` | ko     |
+| `run`     | run the program          | `cargo run -- run                                    | ok     |
 
 ## contribution
 
@@ -54,4 +75,3 @@ if you have any questions, feel free to join the `zhoo` galaxy [discord](https:/
 ## license
 
 [MIT](./LICENSE)
-

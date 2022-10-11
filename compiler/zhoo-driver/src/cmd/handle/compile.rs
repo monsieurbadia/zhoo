@@ -3,7 +3,7 @@ use crate::cmd::settings::Backend;
 use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
 
 use zhoo::back::codegen;
-use zhoo::front::parser;
+use zhoo::front::{analyzer, parser};
 
 use std::any::Any;
 use std::{process, thread};
@@ -54,6 +54,7 @@ fn compiling(settings: Settings) {
 
   println!("\n{:?}", program);
 
+  let _ = analyzer::analyze(&program);
   let codegen = codegen::cranelift::aot::generate(&program);
 
   match codegen.build(settings.ir) {

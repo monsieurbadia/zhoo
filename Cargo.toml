@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "compiler/zhoo",
+  "compiler/zhoo-driver",
   "library/core",
 ]
 

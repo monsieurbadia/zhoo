@@ -100,6 +100,7 @@ impl<'a> Translator<'a> {
       ExprKind::Call(callee, args) => self.translate_expr_call(callee, args),
       ExprKind::UnOp(op, rhs) => self.translate_expr_un_op(op, rhs),
       ExprKind::BinOp(lhs, op, rhs) => self.translate_expr_bin_op(lhs, op, rhs),
+      ExprKind::Return(value) => self.translate_expr_return(value),
       ExprKind::Assign(id, op, rhs) => self.translate_expr_assign(id, op, rhs),
       ExprKind::AssignOp(lhs, op, rhs) => {
         self.translate_expr_assign_op(lhs, op, rhs)
@@ -108,7 +109,8 @@ impl<'a> Translator<'a> {
       ExprKind::While(condition, body) => {
         self.translate_expr_while(condition, body)
       }
-      ExprKind::Return(value) => self.translate_expr_return(value),
+      ExprKind::Break(value) => self.translate_expr_break(expr, value),
+      ExprKind::Continue => self.translate_expr_continue(),
       ExprKind::Block(block) => self.translate_expr_block(block),
       ExprKind::IfElse(condition, consequence, maybe_alternative) => {
         self.translate_expr_if_else(condition, consequence, maybe_alternative)
@@ -392,6 +394,37 @@ impl<'a> Translator<'a> {
     }
   }
 
+  fn translate_expr_return(
+    &mut self,
+    maybe_expr: &Option<PBox<Expr>>,
+  ) -> Value {
+    let mut value = self.translate_expr_lit_int(&0);
+
+    if let Some(e) = maybe_expr {
+      value = self.translate_expr(e);
+      self.builder.ins().return_(&[value]);
+    } else {
+      self.builder.ins().return_(&[]);
+    }
+
+    let new_block = self.builder.create_block();
+
+    self.builder.seal_block(new_block);
+    self.builder.switch_to_block(new_block);
+
+    value
+  }
+
+  fn translate_expr_block(&mut self, block: &Block) -> Value {
+    let mut value = self.translate_expr_lit_int(&0);
+
+    for expr in &block.exprs {
+      value = self.translate_expr(expr);
+    }
+
+    value
+  }
+
   fn translate_expr_loop(&mut self, body: &Block) -> Value {
     let body_block = self.builder.create_block();
     let end_block = self.builder.create_block();
@@ -441,17 +474,19 @@ impl<'a> Translator<'a> {
     self.builder.ins().iconst(self.ty, 0)
   }
 
-  fn translate_expr_return(
+  fn translate_expr_break(
     &mut self,
+    _: &Expr,
     maybe_expr: &Option<PBox<Expr>>,
   ) -> Value {
     let mut value = self.translate_expr_lit_int(&0);
+    let end_block = *self.blocks.last().unwrap();
 
-    if let Some(e) = maybe_expr {
-      value = self.translate_expr(e);
-      self.builder.ins().return_(&[value]);
+    if let Some(expr) = maybe_expr {
+      value = self.translate_expr(expr);
+      self.builder.ins().jump(end_block, &[value]);
     } else {
-      self.builder.ins().return_(&[]);
+      self.builder.ins().jump(end_block, &[]);
     }
 
     let new_block = self.builder.create_block();
@@ -462,12 +497,16 @@ impl<'a> Translator<'a> {
     value
   }
 
-  fn translate_expr_block(&mut self, block: &Block) -> Value {
-    let mut value = self.translate_expr_lit_int(&0);
+  fn translate_expr_continue(&mut self) -> Value {
+    let value = self.translate_expr_lit_int(&0);
+    let end_block = *self.blocks.last().unwrap();
 
-    for expr in &block.exprs {
-      value = self.translate_expr(expr);
-    }
+    self.builder.ins().jump(end_block, &[]);
+
+    let new_block = self.builder.create_block();
+
+    self.builder.seal_block(new_block);
+    self.builder.switch_to_block(new_block);
 
     value
   }

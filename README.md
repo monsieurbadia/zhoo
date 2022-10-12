@@ -1,5 +1,9 @@
 # zhoo
 
+<p align="center">
+  <img src="./misc/logo/zhoo-logo-black.png" />
+</p>
+
 ...
 
 ## overview

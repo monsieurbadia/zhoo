@@ -14,11 +14,12 @@ pub struct Ty {
 }
 
 impl Ty {
+  pub const VOID: Self = Self::new(TyKind::Void, Span::ZERO);
   pub const BOOL: Self = Self::new(TyKind::Bool, Span::ZERO);
   pub const INT: Self = Self::new(TyKind::Int, Span::ZERO);
   pub const REAL: Self = Self::new(TyKind::Real, Span::ZERO);
   pub const STR: Self = Self::new(TyKind::Str, Span::ZERO);
-  pub const VOID: Self = Self::new(TyKind::Void, Span::ZERO);
+  pub const INFER: Self = Self::new(TyKind::Infer, Span::ZERO);
 
   pub const fn new(kind: TyKind, span: Span) -> Self {
     Self { kind, span }
@@ -99,6 +100,7 @@ pub enum TyKind {
   Int,
   Real,
   Str,
+  Infer,
   Fn(Vec<PBox<Ty>>, PBox<Ty>),
   Array(PBox<Ty>, i64),
   Tuple(Vec<PBox<Ty>>),
@@ -112,6 +114,10 @@ impl TyKind {
   fn is_numeric(&self) -> bool {
     matches!(self, Self::Int | Self::Real)
   }
+
+  pub fn is_int(&self) -> bool {
+    matches!(self, Self::Int)
+  }
 }
 
 impl PartialEq for TyKind {
@@ -121,7 +127,8 @@ impl PartialEq for TyKind {
       | (Self::Bool, Self::Bool)
       | (Self::Int, Self::Int)
       | (Self::Real, Self::Real)
-      | (Self::Str, Self::Str) => true,
+      | (Self::Str, Self::Str)
+      | (Self::Infer, Self::Infer) => true,
       (Self::Fn(_, lhs), Self::Fn(_, rhs)) => lhs == rhs,
       (Self::Array(lhs, _), Self::Array(rhs, _)) => lhs == rhs,
       (Self::Tuple(lhs), Self::Tuple(rhs)) => lhs == rhs,

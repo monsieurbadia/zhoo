@@ -426,6 +426,7 @@ impl Display for TyKind {
       Self::Int => write!(f, "int"),
       Self::Real => write!(f, "real"),
       Self::Str => write!(f, "str"),
+      Self::Infer => write!(f, "infer"),
       Self::Fn(args, ty) => write!(f, "Fn({}): {ty}", Sep(args, ", ")),
       Self::Array(indexed, size) => write!(f, "{indexed}[{size}]"),
       Self::Tuple(tys) => write!(f, "({})", Sep(tys, ", ")),

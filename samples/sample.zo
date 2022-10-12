@@ -1,8 +1,8 @@
 fun main(): int {
-  imu x: int = 0;
+  imu x: int = 1;
   imu y: int = 2;
 
-  println("hello, hello");
+  println("hello, hello! 👽");
 
   x + y
 }

@@ -1,6 +1,6 @@
 use super::translator::Translator;
 
-use crate::back::codegen::builtins::{io_builtins, sys_builtins, Builtin};
+use crate::front::analyzer::builtins::{io_builtins, sys_builtins, Builtin};
 
 use crate::back::codegen::cranelift::interface::{
   CompiledFunction, DataContextBuilder, VariableBuilder,

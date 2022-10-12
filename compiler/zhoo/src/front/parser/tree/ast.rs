@@ -1,5 +1,5 @@
 use crate::front::parser::tree::pbox::PBox;
-use crate::front::parser::tree::ty::Ty;
+use crate::front::parser::tree::ty::{AsTy, Ty};
 use crate::util::error::Reporter;
 use crate::util::span::{Span, Spanned};
 
@@ -354,6 +354,12 @@ impl Fun {
   }
 }
 
+impl AsTy for Fun {
+  fn as_ty(&self) -> PBox<Ty> {
+    self.prototype.as_ty()
+  }
+}
+
 #[derive(Clone, Debug)]
 pub struct Prototype {
   pub pattern: PBox<Expr>,
@@ -386,6 +392,12 @@ impl Prototype {
   }
 }
 
+impl AsTy for Prototype {
+  fn as_ty(&self) -> PBox<Ty> {
+    self.output.as_ty()
+  }
+}
+
 #[derive(Clone, Debug)]
 pub struct Arg {
   pub pattern: Pattern,
@@ -403,6 +415,15 @@ impl Arg {
 pub enum ReturnTy {
   Default(Span),
   Ty(PBox<Ty>),
+}
+
+impl AsTy for ReturnTy {
+  fn as_ty(&self) -> PBox<Ty> {
+    match self {
+      Self::Ty(ty) => ty.clone(),
+      Self::Default(span) => Ty::with_void(*span).into(),
+    }
+  }
 }
 
 #[derive(Clone, Debug)]

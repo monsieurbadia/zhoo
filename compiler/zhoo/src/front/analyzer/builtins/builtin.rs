@@ -2,6 +2,7 @@ pub mod io;
 pub mod sys;
 
 use crate::front::parser::tree::ty::Ty;
+use crate::front::parser::tree::PBox;
 
 pub struct Builtin {
   pub name: String,
@@ -14,4 +15,4 @@ impl Builtin {
   }
 }
 
-pub struct Proto(pub Vec<Ty>, pub Ty);
+pub struct Proto(pub Vec<PBox<Ty>>, pub PBox<Ty>);

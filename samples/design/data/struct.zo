@@ -13,7 +13,7 @@ impl Foo {
 }
 
 fun main(): int {
-  imu foo = Foo::new(14);
+  imu foo: Foo = Foo::new(14);
 
   foo.bar()
 }

@@ -11,3 +11,5 @@ enum BarFoo {
   Bar(real),
   FooBar,
 }
+
+fun main() {}

@@ -15,6 +15,7 @@ doctest = false
 lalrpop = "0.19.8"
 
 [dependencies]
+Inflector = "0.11.4"
 ariadne = "0.1.5"
 cranelift = "0.88.1"
 cranelift-codegen = "0.88.1"

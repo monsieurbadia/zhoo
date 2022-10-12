@@ -6,6 +6,7 @@ use crate::util::span::Span;
 pub enum SemanticKind {
   MainNotFound(Span, String),
   MainHasInputs(String, Span),
+  NamingConvention(String, String, Span),
 }
 
 pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
@@ -20,7 +21,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       ),
       vec![(
         *span,
-        format!("{} `{entry_point}`", "to compile a program, i need a main function, add a `main` function to".fg(Color::error())),
+        format!("to compile a program, i need a main function, add a `main` function to {entry_point}").fg(Color::error()).to_string(),
         Color::error(),
       )],
       vec![format!(
@@ -38,8 +39,8 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         *span,
         format!(
           "{}",
-          "rule number 1, no arguments should be given to the main function".fg(Color::error()),
-        ),
+          "rule number 1, no arguments should be given to the main function",
+        ).fg(Color::error()).to_string(),
         Color::error(),
       )],
       vec![format!(
@@ -47,5 +48,14 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         inputs.fg(Color::hint())
       )],
     ),
+    SemanticKind::NamingConvention(identifier, naming, span) => (
+      format!("{} {} {} {}", "variable".fg(Color::title()), format!("`{identifier}`").fg(Color::hint()),  "should have a".fg(Color::title()), format!("`{naming}`").fg(Color::title())),
+      vec![(
+        *span,
+        format!("change this identifier to {naming} convention: `{identifier}`").fg(Color::error()).to_string(),
+        Color::error(),
+      )],
+      vec![],
+    )
   }
 }

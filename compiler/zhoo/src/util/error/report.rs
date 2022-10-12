@@ -1,11 +1,11 @@
-use ariadne::ReportBuilder;
-
 use super::generate::{write_generate_report, GenerateKind};
 use super::semantic::{write_semantic_report, SemanticKind};
 use super::syntax::{write_syntax_report, SyntaxKind};
 
 use crate::util::source::SourceMap;
 use crate::util::span::Span;
+
+use ariadne::ReportBuilder;
 
 use std::cell::Cell;
 use std::default::Default;
@@ -63,7 +63,7 @@ impl Reporter {
       Report::Syntax(ref kind) => write_syntax_report(kind),
       Report::Semantic(ref kind) => write_semantic_report(kind),
       Report::Generate(ref kind) => write_generate_report(kind),
-      Report::Io(error) => panic!("{error}"),
+      Report::Io(ref error) => panic!("{error}"),
     };
 
     let span = labels.first().map(|label| label.0).unwrap_or(Span::ZERO);

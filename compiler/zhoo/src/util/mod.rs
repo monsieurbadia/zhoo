@@ -4,3 +4,4 @@ pub mod error;
 pub mod pack;
 pub mod source;
 pub mod span;
+pub mod strcase;

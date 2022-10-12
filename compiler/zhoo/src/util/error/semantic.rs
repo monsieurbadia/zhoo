@@ -1,12 +1,8 @@
-use std::vec;
-
 use super::color::Color;
 
 use crate::util::error::ReportMessage;
 use crate::util::span::Span;
-
-use inflector::string::pluralize::to_plural;
-use inflector::string::singularize::to_singular;
+use crate::util::strcase;
 
 pub enum SemanticKind {
   MainNotFound(Span, String),
@@ -48,8 +44,8 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         *span,
         format!(
           "{}",
-          "rule number 1, no arguments should be given to the main function",
-        ).fg(Color::error()).to_string(),
+          "rule number 1, no arguments should be given to the main function".fg(Color::error()),
+        ),
         Color::error(),
       )],
       vec![format!(
@@ -58,7 +54,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       )],
     ),
     SemanticKind::NameClash(span, name) => (
-      format!("variable {} already exist", format!("{name}").fg(Color::hint())),
+      format!("variable `{}` already exist", name.fg(Color::hint())),
       vec![(
         *span,
         format!("{}", "this name is already declared in the scope".fg(Color::error())),
@@ -76,7 +72,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![],
     ),
     SemanticKind::OutOfLoop(span, behavior) => (
-      format!("{} {}", format!("`{}`", behavior.fg(Color::hint())), "outside of the loop".fg(Color::BLUE_100)),
+      format!("{} {}", format_args!("`{}`", behavior.fg(Color::hint())), "outside of the loop".fg(Color::title())),
       vec![(
         *span,
         format!("cannot `{behavior}` out of the loop").fg(Color::error()).to_string(),
@@ -93,33 +89,21 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       )],
       vec![],
     ),
-    SemanticKind::WrongInputCount(span, inputs, expected, actual, should_be) => (
+    SemanticKind::WrongInputCount(span, inputs, expected_len, actual_len, should_be) => (
       format!("{}", "missing input arguments".fg(Color::title())),
       vec![(
         *span,
         format!(
-          "the input {arg} of type ({inputs}) are required",
-          arg = if *expected > 1 {
-            to_plural("argument")
-          } else {
-            to_singular("argument")
-          }
+          "the input {argument} of type ({inputs}) are required",
+          argument = strcase::to_plural_or_singular(*expected_len, "argument"),
         ).fg(Color::error()).to_string(),
         Color::error(),
       )],
       vec![
         format!(
-          "this function takes {expected} {expected_arg_fmt} but {actual} {actual_arg_fmt} were supplied. try this: {should_be}",
-          expected_arg_fmt = if *expected > 1 {
-            to_plural("argument")
-          } else {
-            to_singular("argument")
-          },
-          actual_arg_fmt = if *actual > 1 {
-            to_plural("argument")
-          } else {
-            to_singular("argument")
-          },
+          "this function takes {expected_len} {expected_argument} but {actual_len} {actual_argument} were supplied. try this: {should_be}",
+          expected_argument = strcase::to_plural_or_singular(*expected_len, "argument"),
+          actual_argument = strcase::to_plural_or_singular(*actual_len, "argument"),
         )
       ],
     )

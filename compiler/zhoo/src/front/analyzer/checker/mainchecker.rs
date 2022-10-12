@@ -1,7 +1,7 @@
 use crate::front::analyzer::context::Context;
 use crate::front::parser::tree::ast::{Program, Stmt, StmtKind};
 use crate::front::parser::tree::PBox;
-use crate::util::constant::PROGRAM_ENTRY;
+use crate::util::constant::ENTRY_POINT;
 use crate::util::error::{Report, Reporter, Result, SemanticKind};
 use crate::util::span::Span;
 
@@ -32,7 +32,7 @@ fn has_main<'a>(
 ) -> Box<impl FnMut(&'a PBox<Stmt>) -> bool + 'a> {
   Box::new(move |item: &'a PBox<Stmt>| {
     if let StmtKind::Fun(fun) = &item.kind {
-      if fun.prototype.pattern.to_string() == PROGRAM_ENTRY {
+      if fun.prototype.pattern.to_string() == ENTRY_POINT {
         if !fun.prototype.inputs.is_empty() {
           let inputs = &fun.prototype.inputs;
           let single_span = fun.prototype.inputs[0].span;

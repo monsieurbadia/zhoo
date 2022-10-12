@@ -44,7 +44,7 @@ pub fn make_exe_with_link(
   path_link: &str,
   path_output: &str,
 ) {
-  // FIXME: `ld: warning: PIE disabled. Absolute addressing (perhaps -mdynamic-no-pic) not allowed in code signed PIE`
+  // fixme: `ld: warning: PIE disabled. Absolute addressing (perhaps -mdynamic-no-pic) not allowed in code signed PIE`
   match Command::new("gcc")
     .args([
       "-v",

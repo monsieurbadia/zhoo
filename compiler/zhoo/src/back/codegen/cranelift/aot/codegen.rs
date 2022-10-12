@@ -11,7 +11,7 @@ use crate::front::parser::tree::ast::{
 };
 
 use crate::util::constant::{
-  PATH_LIBRARY, PATH_LIBRARY_CORE, PATH_OUTPUT_DIRECTORY, PROGRAM_ENTRY,
+  ENTRY_POINT, PATH_LIBRARY, PATH_LIBRARY_CORE, PATH_OUTPUT_DIRECTORY,
 };
 
 use crate::util::pack;
@@ -20,9 +20,7 @@ use codegen::ir::GlobalValue;
 use cranelift::prelude::{Block as CBlock, *};
 use cranelift_codegen::settings::Flags;
 use cranelift_codegen::{settings, Context};
-use cranelift_module::default_libcall_names;
 use cranelift_module::{FuncId, Linkage, Module};
-use cranelift_native::builder;
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use cranelift_preopt::optimize;
 
@@ -47,7 +45,7 @@ pub struct Codegen<'a> {
   variable_builder: VariableBuilder,
 }
 
-// TODO:
+// todo:
 // option
 //  - output ir: bool
 //  - option level: string
@@ -61,16 +59,19 @@ impl<'a> Codegen<'a> {
       .set("opt_level", "speed_and_size")
       .expect("set optlevel");
 
-    let isa_builder = builder().unwrap();
+    let isa_builder = cranelift_native::builder().unwrap();
     let isa = isa_builder.finish(Flags::new(flag_builder)).unwrap();
 
-    let object_builder =
-      ObjectBuilder::new(isa, "zhoo".to_string(), default_libcall_names())
-        .unwrap();
+    let object_builder = ObjectBuilder::new(
+      isa,
+      "zhoo".to_string(),
+      cranelift_module::default_libcall_names(),
+    )
+    .unwrap();
 
     let module = ObjectModule::new(object_builder);
 
-    let mut codegen = Self {
+    let mut me = Self {
       ctx: module.make_context(),
       builder_context: FunctionBuilderContext::new(),
       module,
@@ -83,9 +84,9 @@ impl<'a> Codegen<'a> {
       variable_builder: VariableBuilder::default(),
     };
 
-    register_builtin(&mut codegen);
+    register_builtin(&mut me);
 
-    codegen
+    me
   }
 
   fn generate(mut self) -> Self {
@@ -167,7 +168,7 @@ impl<'a> Codegen<'a> {
       Err(_) => {
         translator.builder.finalize();
         self.funs.remove(&func_name);
-        return; // TODO: error
+        return; // todo: error
       }
     };
 
@@ -245,11 +246,10 @@ impl<'a> Codegen<'a> {
     let bytes = object.emit().unwrap();
 
     Ok(Box::new(move || {
-      let path_object_file =
-        format!("{PATH_OUTPUT_DIRECTORY}/{PROGRAM_ENTRY}.o");
+      let path_object_file = format!("{PATH_OUTPUT_DIRECTORY}/{ENTRY_POINT}.o");
 
       let path_core_lib = format!("{PATH_LIBRARY}/{PATH_LIBRARY_CORE}");
-      let path_exe_file = format!("{PATH_OUTPUT_DIRECTORY}/{PROGRAM_ENTRY}");
+      let path_exe_file = format!("{PATH_OUTPUT_DIRECTORY}/{ENTRY_POINT}");
 
       pack::make_dir(PATH_OUTPUT_DIRECTORY);
       pack::make_file(&path_object_file, &bytes);

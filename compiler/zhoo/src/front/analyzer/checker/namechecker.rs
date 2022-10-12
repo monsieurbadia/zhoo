@@ -7,34 +7,8 @@ use crate::front::parser::tree::ast::{
 use crate::front::parser::tree::PBox;
 use crate::util::error::{Report, Reporter, Result, SemanticKind};
 use crate::util::span::Span;
-
-use inflector::cases::pascalcase::{is_pascal_case, to_pascal_case};
-
-use inflector::cases::screamingsnakecase::{
-  is_screaming_snake_case, to_screaming_snake_case,
-};
-
-use inflector::cases::snakecase::{is_snake_case, to_snake_case};
-
-use std::fmt;
-
-// TODO: check more cases.
-
-enum NamingConvention {
-  Pascal,
-  Snake,
-  SnakeScreaming,
-}
-
-impl fmt::Display for NamingConvention {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    match self {
-      Self::Pascal => write!(f, "pascal case"),
-      Self::Snake => write!(f, "snake case"),
-      Self::SnakeScreaming => write!(f, "screaming snake case"),
-    }
-  }
-}
+use crate::util::strcase;
+use crate::util::strcase::StrCase;
 
 pub fn check(program: &Program) -> Result<()> {
   let context = Context::new(program);
@@ -119,43 +93,33 @@ fn check_expr_decl(context: &Context, decl: &Decl) {
 }
 
 fn verify_pascal_case(reporter: &Reporter, name: String, span: Span) {
-  if !is_pascal_case(&name) {
-    add_report_naming_convention(
-      reporter,
-      name,
-      NamingConvention::Pascal,
-      span,
-    );
+  if !strcase::is_pascal_case(&name) {
+    add_report_naming_convention(reporter, name, StrCase::Pascal, span);
   }
 }
 
 fn verify_snake_case(reporter: &Reporter, name: String, span: Span) {
-  if !is_snake_case(&name) {
-    add_report_naming_convention(reporter, name, NamingConvention::Snake, span)
+  if !strcase::is_snake_case(&name) {
+    add_report_naming_convention(reporter, name, StrCase::Snake, span)
   }
 }
 
 fn verify_snake_case_screaming(reporter: &Reporter, name: String, span: Span) {
-  if !is_screaming_snake_case(&name) {
-    add_report_naming_convention(
-      reporter,
-      name,
-      NamingConvention::SnakeScreaming,
-      span,
-    )
+  if !strcase::is_snake_screaming_case(&name) {
+    add_report_naming_convention(reporter, name, StrCase::SnakeScreaming, span)
   }
 }
 
 fn add_report_naming_convention(
   reporter: &Reporter,
   name: String,
-  naming: NamingConvention,
+  naming: StrCase,
   span: Span,
 ) {
   let name = match naming {
-    NamingConvention::Pascal => to_pascal_case(&name),
-    NamingConvention::Snake => to_snake_case(&name),
-    NamingConvention::SnakeScreaming => to_screaming_snake_case(&name),
+    StrCase::Pascal => strcase::to_pascal_case(&name),
+    StrCase::Snake => strcase::to_snake_case(&name),
+    StrCase::SnakeScreaming => strcase::to_snake_case_screaming(&name),
   };
 
   reporter.add_report(Report::Semantic(SemanticKind::NamingConvention(

@@ -82,7 +82,7 @@ impl ScopeMap {
   pub fn set_decl(&mut self, name: String, ty: PBox<Ty>) -> Result<(), String> {
     match self.maps.last_mut() {
       Some(map) => map.set_decl(name, ty),
-      None => Err(format!("variable {name} value do not exist")),
+      None => Err(format!("variable `{name}` value do not exist")),
     }
   }
 
@@ -93,7 +93,7 @@ impl ScopeMap {
   ) -> Result<(), String> {
     match self.maps.last_mut() {
       Some(map) => map.set_fun(name, ty),
-      None => Err(format!("function {name} value do not exist")),
+      None => Err(format!("function `{name}` value do not exist")),
     }
   }
 }

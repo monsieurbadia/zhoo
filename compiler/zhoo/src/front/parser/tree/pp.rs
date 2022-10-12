@@ -1,12 +1,12 @@
 use super::ast::*;
 use super::ty::{Ty, TyKind};
 
-use std::fmt::{Display, Formatter, Result};
+use std::fmt;
 
 pub struct Sep<'a, T: 'a>(pub &'a [T], pub &'a str);
 
-impl<'a, T: Display> Display for Sep<'a, T> {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl<'a, T: fmt::Display> fmt::Display for Sep<'a, T> {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let nodes = self
       .0
       .iter()
@@ -18,8 +18,8 @@ impl<'a, T: Display> Display for Sep<'a, T> {
   }
 }
 
-impl Display for Public {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Public {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Yes(_) => write!(f, "pub"),
       Self::No => write!(f, ""),
@@ -27,8 +27,8 @@ impl Display for Public {
   }
 }
 
-impl Display for Async {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Async {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Yes(_) => write!(f, "async"),
       Self::No => write!(f, ""),
@@ -36,8 +36,8 @@ impl Display for Async {
   }
 }
 
-impl Display for Unsafe {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Unsafe {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Yes(_) => write!(f, "unsafe"),
       Self::No => write!(f, ""),
@@ -45,8 +45,8 @@ impl Display for Unsafe {
   }
 }
 
-impl Display for Wasm {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Wasm {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Yes(_) => write!(f, "wasm"),
       Self::No => write!(f, ""),
@@ -54,8 +54,8 @@ impl Display for Wasm {
   }
 }
 
-impl Display for Mutability {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Mutability {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Yes => write!(f, "mut"),
       Self::No => write!(f, ""),
@@ -63,14 +63,14 @@ impl Display for Mutability {
   }
 }
 
-impl Display for Pattern {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Pattern {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.kind)
   }
 }
 
-impl Display for PatternKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for PatternKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Underscore => write!(f, "_"),
       Self::Identifier(name) => write!(f, "{name}"),
@@ -79,20 +79,20 @@ impl Display for PatternKind {
   }
 }
 
-impl Display for Program {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Program {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", Sep(&self.stmts, "\n"))
   }
 }
 
-impl Display for Stmt {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Stmt {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.kind)
   }
 }
 
-impl Display for StmtKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for StmtKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Ext(ext) => write!(f, "{ext}"),
       Self::TyAlias(alias) => write!(f, "{alias}"),
@@ -105,8 +105,8 @@ impl Display for StmtKind {
   }
 }
 
-impl Display for Ext {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Ext {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{} ext {}", self.public, self.prototype)?;
 
     let Some(body) = &self.body else { return write!(f, ";"); };
@@ -115,14 +115,14 @@ impl Display for Ext {
   }
 }
 
-impl Display for TyAlias {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for TyAlias {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{} type {} = {};", self.public, self.name, self.kind)
   }
 }
 
-impl Display for TyAliasKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for TyAliasKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Single(ty) => write!(f, "{ty}"),
       Self::Group(fields) => write!(f, "{{{}}}", Sep(fields, ",\n")),
@@ -130,14 +130,14 @@ impl Display for TyAliasKind {
   }
 }
 
-impl Display for TyAliasField {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for TyAliasField {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}: {}", self.name, self.ty)
   }
 }
 
-impl Display for Enum {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Enum {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
       "{} enum {} {}",
@@ -148,8 +148,8 @@ impl Display for Enum {
   }
 }
 
-impl Display for EnumVariant {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for EnumVariant {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.name)?;
 
     let Some(arg) = &self.arg else { return write!(f, "",); };
@@ -158,20 +158,20 @@ impl Display for EnumVariant {
   }
 }
 
-impl Display for EnumVariantArg {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for EnumVariantArg {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.value)
   }
 }
 
-impl Display for Struct {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Struct {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{} struct {} {}", self.public, self.name, self.kind)
   }
 }
 
-impl Display for StructKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for StructKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Init => write!(f, ";"),
       Self::Decl(struct_decl_field) => {
@@ -184,20 +184,20 @@ impl Display for StructKind {
   }
 }
 
-impl Display for StructDeclField {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for StructDeclField {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{} {}: {}", self.public, self.name, self.ty)
   }
 }
 
-impl Display for StructTupleField {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for StructTupleField {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{} {}", self.public, self.ty)
   }
 }
 
-impl Display for Decl {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Decl {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.pattern).ok();
 
     if let Some(ty) = &self.ty {
@@ -210,8 +210,8 @@ impl Display for Decl {
   }
 }
 
-impl Display for Fun {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Fun {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match &self.public {
       Public::Yes(_) => write!(f, "pub ").ok(),
       Public::No => write!(f, "").ok(),
@@ -236,8 +236,8 @@ impl Display for Fun {
   }
 }
 
-impl Display for Prototype {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Prototype {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
       "{} ({}) {}",
@@ -248,14 +248,14 @@ impl Display for Prototype {
   }
 }
 
-impl Display for Arg {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Arg {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}: {}", self.pattern, self.ty)
   }
 }
 
-impl Display for ReturnTy {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for ReturnTy {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Ty(ty) => write!(f, ": {ty}"),
       Self::Default(_) => write!(f, ""),
@@ -263,8 +263,8 @@ impl Display for ReturnTy {
   }
 }
 
-impl Display for Block {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Block {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     if self.exprs.is_empty() {
       write!(f, "{{}}")
     } else {
@@ -273,8 +273,8 @@ impl Display for Block {
   }
 }
 
-impl Display for Unit {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Unit {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let mocks = self
       .mocks
       .iter()
@@ -299,14 +299,14 @@ impl Display for Unit {
   }
 }
 
-impl Display for Expr {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Expr {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.kind)
   }
 }
 
-impl Display for ExprKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for ExprKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Stmt(stmt) => write!(f, "{stmt}"),
       Self::Decl(decl) => write!(f, "{decl}"),
@@ -359,14 +359,14 @@ impl Display for ExprKind {
   }
 }
 
-impl Display for Lit {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Lit {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.kind)
   }
 }
 
-impl Display for LitKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for LitKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Bool(boolean) => write!(f, "{boolean}"),
       Self::Int(num) => write!(f, "{num}"),
@@ -376,8 +376,8 @@ impl Display for LitKind {
   }
 }
 
-impl Display for BinOpKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for BinOpKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Add => write!(f, "+"),
       Self::Sub => write!(f, "-"),
@@ -403,8 +403,8 @@ impl Display for BinOpKind {
   }
 }
 
-impl Display for UnOpKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for UnOpKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Neg => write!(f, "-"),
       Self::Not => write!(f, "!"),
@@ -412,14 +412,14 @@ impl Display for UnOpKind {
   }
 }
 
-impl Display for Ty {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for Ty {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.kind)
   }
 }
 
-impl Display for TyKind {
-  fn fmt(&self, f: &mut Formatter) -> Result {
+impl fmt::Display for TyKind {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Void => write!(f, "void"),
       Self::Bool => write!(f, "bool"),

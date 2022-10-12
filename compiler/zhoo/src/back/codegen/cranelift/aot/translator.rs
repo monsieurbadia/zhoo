@@ -4,6 +4,7 @@ use crate::back::codegen::cranelift::interface::{
 
 use crate::front::parser::tree::ast::*;
 use crate::front::parser::tree::PBox;
+use crate::util::error::{GenerateKind, Report};
 
 use cranelift::prelude::{
   types, Block as CBlock, EntityRef, FunctionBuilder, InstBuilder, IntCC,
@@ -44,7 +45,7 @@ impl<'a> Translator<'a> {
     match &stmt.kind {
       StmtKind::Val(decl) => self.translate_stmt_val(decl),
       StmtKind::Struct(struct_def) => self.translate_stmt_struct(struct_def),
-      _ => panic!(),
+      _ => panic!("tmp translate:stmt"),
     }
   }
 
@@ -118,7 +119,7 @@ impl<'a> Translator<'a> {
       ExprKind::When(condition, consequence, alternative) => {
         self.translate_expr_when(condition, consequence, alternative)
       }
-      _ => todo!("{:?}", expr),
+      _ => todo!("tmp translate:expr => {}", expr),
     }
   }
 
@@ -169,7 +170,9 @@ impl<'a> Translator<'a> {
       todo!();
     }
 
-    panic!("translate expr id")
+    self.program.reporter.raise(Report::Generate(
+      GenerateKind::IdentifierNotFound(name.to_string()),
+    ))
   }
 
   fn translate_expr_call(
@@ -180,7 +183,10 @@ impl<'a> Translator<'a> {
     match self.funs.get(&callee.to_string()) {
       Some(func) => {
         if func.input_len != inputs.len() {
-          // TODO: handle error?!
+          // todo: not finished yet
+          self.program.reporter.add_report(Report::Generate(
+            GenerateKind::WrongInputCount(callee.span),
+          ))
         }
 
         let callee_ref =
@@ -200,7 +206,9 @@ impl<'a> Translator<'a> {
 
         call_results[0]
       }
-      None => panic!("\n\ntranslate_expr_call error: {callee}\n\n"),
+      None => self.program.reporter.raise(Report::Generate(
+        GenerateKind::CallNotFound(callee.span, callee.to_string()),
+      )),
     }
   }
 
@@ -251,7 +259,9 @@ impl<'a> Translator<'a> {
       BinOpKind::BitAnd => self.translate_expr_bin_op_bit_and(lhs, rhs),
       BinOpKind::BitXor => self.translate_expr_bin_op_bit_xor(lhs, rhs),
       BinOpKind::BitOr => self.translate_expr_bin_op_bit_or(lhs, rhs),
-      _ => panic!("translate expr bin op"),
+      _ => self.program.reporter.raise(Report::Generate(
+        GenerateKind::InvalidBinOp(op.span, lhs.to_string(), rhs.to_string()),
+      )),
     }
   }
 
@@ -383,14 +393,20 @@ impl<'a> Translator<'a> {
           BinOpKind::BitAnd => self.translate_expr_bin_op_bit_and(lhs, rhs),
           BinOpKind::BitXor => self.translate_expr_bin_op_bit_xor(lhs, rhs),
           BinOpKind::BitOr => self.translate_expr_bin_op_bit_or(lhs, rhs),
-          _ => panic!("binary operation not valid"),
+          _ => self.program.reporter.raise(Report::Generate(
+            GenerateKind::InvalidBinOp(
+              op.span,
+              lhs.to_string(),
+              rhs.to_string(),
+            ),
+          )),
         };
 
         self.builder.def_var(var, new_rhs);
 
         new_rhs
       }
-      _ => unreachable!(),
+      _ => unreachable!(), // fixme
     }
   }
 

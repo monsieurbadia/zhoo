@@ -10,9 +10,9 @@ use crate::front::parser::tree::PBox;
 use crate::util::error::{Report, Result, SemanticKind};
 use crate::util::span::Span;
 
-// FIXME #1
+// fixme #1
 //
-// too many raise, I should rather use the result type to return an error.
+// too many raise, i should rather use the result type to return an error.
 // errors will be stored in a vector
 
 pub fn check(program: &Program) -> Result<()> {
@@ -27,9 +27,14 @@ pub fn check(program: &Program) -> Result<()> {
 
 fn check_stmt(context: &mut Context, stmt: &Stmt) {
   match &stmt.kind {
+    StmtKind::Val(decl) => check_stmt_decl(context, decl),
     StmtKind::Fun(fun) => check_stmt_fun(context, fun),
     _ => {}
   }
+}
+
+fn check_stmt_decl(context: &mut Context, decl: &Decl) {
+  check_decl(context, decl);
 }
 
 fn check_stmt_fun(context: &mut Context, fun: &Fun) {
@@ -100,7 +105,7 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
     ExprKind::IfElse(condition, consequence, maybe_alternative) => {
       check_expr_if_else(context, condition, consequence, maybe_alternative)
     }
-    _ => panic!("tmp error for `check:expr`"),
+    _ => panic!("tmp error for `check:expr`"), // fixme #1
   }
 }
 
@@ -123,7 +128,7 @@ fn check_decl(context: &mut Context, decl: &Decl) -> PBox<Ty> {
   };
 
   let Ok(_) = context.scope_map.set_decl(name.to_string(), ty) else {
-    // FIXME #1
+    // fixme #1
     context.program.reporter.raise(
       Report::Semantic(SemanticKind::NameClash(name.span, name.to_string())),
     );
@@ -131,7 +136,7 @@ fn check_decl(context: &mut Context, decl: &Decl) -> PBox<Ty> {
 
   let name = match &name.kind {
     PatternKind::Identifier(identifier) => identifier,
-    _ => panic!("not good at all"),
+    _ => panic!("not good at all"), // fixme #1
   };
 
   let t1 = check_expr(context, name);
@@ -172,7 +177,7 @@ fn check_expr_identifier(context: &mut Context, identifier: &str) -> PBox<Ty> {
   } else if let Some(ty) = context.scope_map.fun(identifier) {
     ty.1.clone()
   } else {
-    panic!("tmp error for `check:expr`");
+    panic!("tmp error for `check:expr`"); // fixme #1
   }
 }
 
@@ -184,7 +189,7 @@ fn check_expr_call(
   let (fun_input_tys, fun_return_ty) =
     match context.scope_map.fun(&callee.to_string()) {
       Some(fun_ty) => fun_ty,
-      None => panic!("calling not defined function"), // FIXME #1
+      None => panic!("calling not defined function"), // fixme #1
     };
 
   if inputs.len() != fun_input_tys.len() {
@@ -209,11 +214,11 @@ fn check_expr_call(
 
   for (x, input) in inputs.iter().enumerate() {
     if x < fun_input_tys.len() {
-      check_verify(&mut context.clone(), input, &fun_input_tys[x]);
+      ensure_expr_ty(&mut context.clone(), input, &fun_input_tys[x]);
     }
   }
 
-  check_verify(&mut context.clone(), callee, fun_return_ty);
+  ensure_expr_ty(&mut context.clone(), callee, fun_return_ty);
   fun_return_ty.clone()
 }
 
@@ -250,7 +255,7 @@ fn check_expr_un_op(context: &mut Context, op: &UnOp, rhs: &Expr) -> PBox<Ty> {
   }
 }
 
-// TODO: ugly stuff, this will be improve later
+// todo: ugly stuff, this will be improve later
 fn check_expr_bin_op(
   context: &mut Context,
   lhs: &Expr,
@@ -263,7 +268,7 @@ fn check_expr_bin_op(
   match &op.node {
     BinOpKind::Lt | BinOpKind::Le | BinOpKind::Gt | BinOpKind::Ge => {
       if !t1.kind.is_int() || !t2.kind.is_int() {
-        // FIXME #1
+        // fixme #1
         context.program.reporter.raise(Report::Semantic(
           SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
         ));
@@ -273,7 +278,7 @@ fn check_expr_bin_op(
     }
     BinOpKind::And | BinOpKind::Or => {
       if t1.kind != t2.kind {
-        // FIXME #1
+        // fixme #1
         context.program.reporter.raise(Report::Semantic(
           SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
         ));
@@ -283,7 +288,7 @@ fn check_expr_bin_op(
     }
     BinOpKind::Eq | BinOpKind::Ne => {
       if t1.kind != t2.kind {
-        // FIXME #1
+        // fixme #1
         context.program.reporter.raise(Report::Semantic(
           SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
         ));
@@ -293,7 +298,7 @@ fn check_expr_bin_op(
     }
     _ => {
       if t1.kind != t2.kind {
-        // FIXME #1
+        // fixme #1
         context.program.reporter.raise(Report::Semantic(
           SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
         ));
@@ -312,7 +317,7 @@ fn check_expr_assign(
 ) -> PBox<Ty> {
   let t1 = check_expr(context, lhs);
 
-  check_verify(context, rhs, &t1);
+  ensure_expr_ty(context, rhs, &t1);
   Ty::with_void(Span::merge(&lhs.span, &rhs.span)).into()
 }
 
@@ -326,13 +331,13 @@ fn check_expr_assign_op(
   let t2 = check_expr(context, rhs);
 
   if !op.node.is_assign_op() {
-    // FIXME #1
+    // fixme #1
     context.program.reporter.raise(Report::Semantic(
       SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
     ));
   }
 
-  check_equality(context, &t1, &t2);
+  expect_equality(context, &t1, &t2);
   Ty::with_void(Span::merge(&lhs.span, &rhs.span)).into()
 }
 
@@ -344,7 +349,7 @@ fn check_expr_return(
   if let Some(expr) = maybe_expr {
     let t1 = check_expr(context, expr);
 
-    check_equality(context, &t1, &context.return_ty.clone());
+    expect_equality(context, &t1, &context.return_ty.clone());
 
     return t1;
   };
@@ -375,7 +380,7 @@ fn check_expr_while(
   condition: &Expr,
   body: &Block,
 ) -> PBox<Ty> {
-  check_verify(context, condition, &Ty::with_bool(condition.span));
+  ensure_expr_ty(context, condition, &Ty::with_bool(condition.span));
   context.loops += 1;
   check_block(context, body);
   context.loops -= 1;
@@ -397,7 +402,7 @@ fn check_expr_break(
   if let Some(expr) = maybe_expr {
     let t1 = check_expr(context, expr);
 
-    check_equality(context, &t1, &context.return_ty.clone());
+    expect_equality(context, &t1, &context.return_ty.clone());
 
     return t1;
   }
@@ -426,7 +431,7 @@ fn check_expr_when(
   let t3 = check_expr(context, alternative);
   let boolean = Ty::with_bool(condition.span);
 
-  check_equality(context, &t1, &boolean);
+  expect_equality(context, &t1, &boolean);
   unify_tys(context, &t2, &t3)
 }
 
@@ -444,7 +449,7 @@ fn check_expr_if_else(
   if !t1.is_boolean() {
     let boolean = Ty::with_bool(condition.span);
 
-    // FIXME #1
+    // fixme #1
     context.program.reporter.raise(Report::Semantic(
       SemanticKind::TypeMismatch(
         Span::merge(&t1.span, &boolean.span),
@@ -454,18 +459,18 @@ fn check_expr_if_else(
     ));
   }
 
-  check_equality(context, &t2, &t3);
+  expect_equality(context, &t2, &t3);
 
   t2
 }
 
-fn check_verify(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {
+fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {
   let t2 = check_expr(context, expr);
 
-  check_equality(context, t1, &t2)
+  expect_equality(context, t1, &t2)
 }
 
-fn check_equality(context: &mut Context, t1: &Ty, t2: &Ty) -> bool {
+fn expect_equality(context: &mut Context, t1: &Ty, t2: &Ty) -> bool {
   if t1.kind != t2.kind {
     context.program.reporter.add_report(Report::Semantic(
       SemanticKind::TypeMismatch(
@@ -482,7 +487,7 @@ fn check_equality(context: &mut Context, t1: &Ty, t2: &Ty) -> bool {
 
 fn unify_tys(context: &mut Context, t1: &Ty, t2: &Ty) -> PBox<Ty> {
   if t1.kind != t2.kind {
-    // FIXME #1
+    // fixme #1
     context.program.reporter.raise(Report::Semantic(
       SemanticKind::TypeMismatch(
         Span::merge(&t1.span, &t2.span),

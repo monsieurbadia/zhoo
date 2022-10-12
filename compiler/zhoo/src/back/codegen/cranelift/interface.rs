@@ -5,7 +5,6 @@ use cranelift::prelude::*;
 use cranelift_module::{DataContext, FuncId, Linkage, Module};
 use cranelift_object::ObjectModule;
 
-use core::panic;
 use std::collections::HashMap;
 
 pub struct CompiledFunction {

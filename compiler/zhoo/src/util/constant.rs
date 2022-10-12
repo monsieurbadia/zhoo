@@ -1,5 +1,5 @@
 // the entry point of the program
-pub const PROGRAM_ENTRY: &str = "main";
+pub const ENTRY_POINT: &str = "main";
 
 // the zhoo library directory path
 pub const PATH_LIBRARY: &str = "target/debug";

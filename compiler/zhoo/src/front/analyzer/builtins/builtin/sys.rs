@@ -8,12 +8,12 @@ pub fn sys_builtins() -> Vec<Builtin> {
       String::from("exit"),
       Proto(vec![Ty::INT.into()], Ty::VOID.into()),
     ),
-    // FIXME: `Undefined symbols for architecture x86_64: _create", referenced from: _main in main.o`
+    // fixme: `Undefined symbols for architecture x86_64: _create", referenced from: _main in main.o`
     Builtin::new(
       String::from("create"),
       Proto(vec![Ty::STR.into(), Ty::STR.into()], Ty::VOID.into()),
     ),
-    // FIXME: `dyld: BIND_OPCODE_SET_SEGMENT_AND_OFFSET_ULEB has segment 1 which is not writable`
+    // fixme: `dyld: BIND_OPCODE_SET_SEGMENT_AND_OFFSET_ULEB has segment 1 which is not writable`
     Builtin::new(
       String::from("open"),
       Proto(vec![Ty::STR.into()], Ty::STR.into()),

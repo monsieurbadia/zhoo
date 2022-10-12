@@ -49,7 +49,6 @@ pub struct Codegen<'a> {
 // option
 //  - output ir: bool
 //  - option level: string
-//
 
 impl<'a> Codegen<'a> {
   fn new(program: &'a Program) -> Self {

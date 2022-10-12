@@ -46,12 +46,12 @@ a good way to do unit tests with functionality adapted to the comfort of the pro
 
 ## compiler phases
 
-for the moment the proof of concept has only two phases
+for the moment the proof of concept has only three phases:
 
 ```
-           |--------|            |---------|
-source --> | parser | -- ast --> | codegen | --> exe
-           |--------|            |---------|
+           |--------|            |----------|            |---------|
+source --> | parser | -- ast --> | analyzer | -- ast --> | codegen | --> exe
+           |--------|            |----------|            |---------|
 ```
 
 ## start

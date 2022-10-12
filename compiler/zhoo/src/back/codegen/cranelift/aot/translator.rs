@@ -113,6 +113,9 @@ impl<'a> Translator<'a> {
       ExprKind::IfElse(condition, consequence, maybe_alternative) => {
         self.translate_expr_if_else(condition, consequence, maybe_alternative)
       }
+      ExprKind::When(condition, consequence, alternative) => {
+        self.translate_expr_when(condition, consequence, alternative)
+      }
       _ => todo!("{:?}", expr),
     }
   }
@@ -470,6 +473,28 @@ impl<'a> Translator<'a> {
   }
 
   fn translate_expr_if_else(
+    &mut self,
+    condition: &Expr,
+    consequence: &Expr,
+    maybe_alternative: &Option<PBox<Expr>>,
+  ) -> Value {
+    self.translate_conditional(condition, consequence, maybe_alternative)
+  }
+
+  fn translate_expr_when(
+    &mut self,
+    condition: &PBox<Expr>,
+    consequence: &PBox<Expr>,
+    alternative: &PBox<Expr>,
+  ) -> Value {
+    self.translate_conditional(
+      condition,
+      consequence,
+      &Some(alternative.clone()),
+    )
+  }
+
+  fn translate_conditional(
     &mut self,
     condition: &Expr,
     consequence: &Expr,

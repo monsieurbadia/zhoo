@@ -49,8 +49,7 @@ async fn compile(
 fn compiling(settings: Settings) {
   println!("compiling the program");
 
-  let source = std::fs::read_to_string(&settings.input).expect("to read file");
-  let program = parser::parse(&source);
+  let program = parser::parse(settings.input);
 
   println!("\n{:?}", program);
 
@@ -59,7 +58,7 @@ fn compiling(settings: Settings) {
 
   match codegen.build(settings.ir) {
     Ok(done) => {
-      println!("{:?}", program);
+      // println!("{:?}", program);
       done();
     }
     Err(error) => {

@@ -1,5 +1,6 @@
 use crate::front::parser::tree::pbox::PBox;
 use crate::front::parser::tree::ty::Ty;
+use crate::util::error::Reporter;
 use crate::util::span::{Span, Spanned};
 
 #[derive(Clone, Debug)]
@@ -51,14 +52,24 @@ pub enum PatternKind {
   Lit(PBox<Expr>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Program {
   pub stmts: Vec<PBox<Stmt>>,
+  pub reporter: Reporter,
+  pub span: Span,
 }
 
 impl Program {
-  pub const fn new(stmts: Vec<PBox<Stmt>>) -> Self {
-    Self { stmts }
+  pub const fn new(
+    stmts: Vec<PBox<Stmt>>,
+    reporter: Reporter,
+    span: Span,
+  ) -> Self {
+    Self {
+      stmts,
+      reporter,
+      span,
+    }
   }
 }
 

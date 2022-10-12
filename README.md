@@ -8,7 +8,7 @@
 - `hindley milner` type inference
 - high performance
 - `cranelift` and `llvm` backend (dev and release)
-- user-friendly report messages
+- user-friendly report messages via `ariadne`
 - small binaries
 - metaprogramming
 - fast compilation time

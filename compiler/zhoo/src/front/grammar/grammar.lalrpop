@@ -7,8 +7,8 @@ use std::str::FromStr;
 
 grammar;
 
-pub Program: Vec<PBox<Stmt>> = {
-  <stmts:Stmt*> => stmts,
+pub Program: (Vec<PBox<Stmt>>, Span) = {
+  <lo:@L> <stmts:Stmt*> <hi:@R> => (stmts, Span::new(lo, hi)),
 }
 
 StmtBind: PBox<Stmt> = {

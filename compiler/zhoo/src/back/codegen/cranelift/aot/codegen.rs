@@ -10,6 +10,8 @@ use crate::front::parser::tree::ast::{
   Ext, Fun, Program, Prototype, ReturnTy, Stmt, StmtKind,
 };
 
+use crate::front::parser::tree::ty::AsTy;
+
 use crate::util::constant::{
   ENTRY_POINT, PATH_LIBRARY, PATH_LIBRARY_CORE, PATH_OUTPUT_DIRECTORY,
 };
@@ -116,7 +118,9 @@ impl<'a> Codegen<'a> {
       signature.params.push(AbiParam::new(types::I64));
     }
 
-    signature.returns.push(AbiParam::new(types::I64));
+    signature
+      .returns
+      .push(AbiParam::new(fun.prototype.output.as_ty().into()));
 
     let vm_context = AbiParam::special(
       self.module.target_config().pointer_type(),

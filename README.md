@@ -76,7 +76,7 @@ source --> | parser | -- ast --> | analyzer | -- ast --> | codegen | --> exe
 
 ## start
 
-[Rust](https://www.rust-lang.org/tools/install) and [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) must be installed on your machine before.
+[rust](https://www.rust-lang.org/tools/install) and [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) must be installed on your machine before.
 
 ### cli
 
@@ -84,7 +84,9 @@ source --> | parser | -- ast --> | analyzer | -- ast --> | codegen | --> exe
 |:----------|:-------------------------|:-----------------------------------------------------|:-------|
 | `compile` | compile with `cranelift` | `cargo run -- compile --input <path>`                | ok     |
 | `compile` | compile with `llvm`      | `cargo run -- compile --input <path> --backend llvm` | ko     |
-| `run`     | run the program          | `cargo run -- run                                    | ok     |
+| `run`     | run the program          | `cargo run -- run`                                   | ok     |
+
+the compiler generates two files: `main.o` and `main` in the `/program` directory. the `main` file is an executable which will be run by the command: `cargo run -- run`.
 
 ## contribution
 

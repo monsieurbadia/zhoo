@@ -188,7 +188,7 @@ impl<'a> Translator<'a> {
   fn translate_expr_call(
     &mut self,
     callee: &Expr,
-    inputs: &Vec<PBox<Expr>>,
+    inputs: &[PBox<Expr>],
   ) -> Value {
     match self.funs.get(&callee.to_string()) {
       Some(func) => {
@@ -602,14 +602,14 @@ impl<'a> Translator<'a> {
 
   fn translate_expr_lambda(
     &mut self,
-    _args: &Vec<PBox<Expr>>,
+    _args: &[PBox<Expr>],
     _block_or_expr: &Expr,
   ) -> Value {
     todo!()
   }
 
   // fixme: [1]    46739 segmentation fault
-  fn translate_expr_array(&mut self, elements: &Vec<PBox<Expr>>) -> Value {
+  fn translate_expr_array(&mut self, elements: &[PBox<Expr>]) -> Value {
     let vm_context = self
       .builder
       .func

@@ -1,4 +1,5 @@
 use crate::front::parser::tree::ty::{Ty, TyKind};
+use crate::front::parser::tree::PBox;
 
 use codegen::ir::GlobalValue;
 use cranelift::prelude::*;
@@ -94,12 +95,13 @@ impl DataContextBuilder {
   }
 }
 
-impl From<&Box<Ty>> for types::Type {
-  fn from(ty: &Box<Ty>) -> Self {
+impl From<PBox<Ty>> for types::Type {
+  fn from(ty: PBox<Ty>) -> Self {
     match ty.kind {
       TyKind::Bool => types::B1,
       TyKind::Int => types::I64,
       TyKind::Real => types::F64,
+      TyKind::Void => types::I64,
       _ => panic!("from ty to types"),
     }
   }

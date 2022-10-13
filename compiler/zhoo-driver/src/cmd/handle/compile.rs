@@ -50,9 +50,6 @@ fn compiling(settings: Settings) {
   println!("compiling the program");
 
   let program = parser::parse(settings.input);
-
-  println!("\n{:?}", program);
-
   let _ = analyzer::analyze(&program);
   let codegen = codegen::cranelift::aot::generate(&program);
 

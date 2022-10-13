@@ -191,7 +191,7 @@ fn check_expr_identifier(context: &mut Context, identifier: &str) -> PBox<Ty> {
 fn check_expr_call(
   context: &mut Context,
   callee: &Expr,
-  inputs: &Vec<PBox<Expr>>,
+  inputs: &[PBox<Expr>],
 ) -> PBox<Ty> {
   let (fun_input_tys, fun_return_ty) =
     match context.scope_map.fun(&callee.to_string()) {
@@ -473,7 +473,7 @@ fn check_expr_if_else(
 
 fn check_expr_lambda(
   _context: &mut Context,
-  _args: &Vec<PBox<Expr>>,
+  _args: &[PBox<Expr>],
   _block_or_expr: &Expr,
 ) -> PBox<Ty> {
   todo!()
@@ -481,7 +481,7 @@ fn check_expr_lambda(
 
 fn check_expr_array(
   _context: &mut Context,
-  elements: &Vec<PBox<Expr>>,
+  elements: &[PBox<Expr>],
 ) -> PBox<Ty> {
   Ty::with_array(Ty::INT.into(), elements.len() as i64, Span::new(0, 0)).into()
 }

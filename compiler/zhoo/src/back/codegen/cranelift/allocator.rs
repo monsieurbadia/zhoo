@@ -5,6 +5,9 @@ thread_local! {
 }
 
 pub fn alloc(size: usize) -> i64 {
+  let index = ALLOCATOR_INDEX.with(|x| *x.borrow());
+
   ALLOCATOR_INDEX.with(|x| *x.borrow_mut() += size as i64);
-  ALLOCATOR_INDEX.with(|x| *x.borrow_mut())
+
+  index
 }

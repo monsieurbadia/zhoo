@@ -109,6 +109,9 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
       check_expr_lambda(context, args, block_or_expr)
     }
     ExprKind::Array(elements) => check_expr_array(context, elements),
+    ExprKind::Index(indexed, index) => {
+      check_expr_index(context, indexed, index)
+    }
     _ => panic!("tmp error for `check:expr`"), // fixme #1
   }
 }
@@ -481,6 +484,15 @@ fn check_expr_array(
   elements: &Vec<PBox<Expr>>,
 ) -> PBox<Ty> {
   Ty::with_array(Ty::INT.into(), elements.len() as i64, Span::new(0, 0)).into()
+}
+
+fn check_expr_index(
+  _context: &mut Context,
+  _indexed: &Expr,
+  _index: &Expr,
+) -> PBox<Ty> {
+  // tmp
+  Ty::INT.into()
 }
 
 fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {

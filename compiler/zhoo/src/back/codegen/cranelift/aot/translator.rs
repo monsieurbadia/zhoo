@@ -13,7 +13,8 @@ use cranelift::prelude::{
   InstBuilder, IntCC, Value, Variable,
 };
 
-use cranelift_codegen::ir::GlobalValue;
+use cranelift_codegen::ir::immediates::Offset32;
+use cranelift_codegen::ir::{GlobalValue, MemFlags};
 use cranelift_module::Module;
 use cranelift_object::ObjectModule;
 
@@ -125,6 +126,9 @@ impl<'a> Translator<'a> {
         self.translate_expr_lambda(args, block_or_expr)
       }
       ExprKind::Array(elements) => self.translate_expr_array(elements),
+      ExprKind::Index(indexed, index) => {
+        self.translate_expr_index(indexed, index)
+      }
       _ => todo!("tmp translate:expr => {}", expr),
     }
   }
@@ -605,9 +609,6 @@ impl<'a> Translator<'a> {
   }
 
   fn translate_expr_array(&mut self, elements: &Vec<PBox<Expr>>) -> Value {
-    use cranelift_codegen::ir::immediates::Offset32;
-    use cranelift_codegen::ir::MemFlags;
-
     let vm_context = self
       .builder
       .func
@@ -645,5 +646,27 @@ impl<'a> Translator<'a> {
     }
 
     global_value
+  }
+
+  fn translate_expr_index(&mut self, indexed: &Expr, index: &Expr) -> Value {
+    let indexed = self.translate_expr(indexed);
+    let index = self.translate_expr(index);
+    let array_type = self.module.target_config().pointer_type();
+
+    let offset = self
+      .builder
+      .ins()
+      .imul_imm(index, array_type.bytes() as i64);
+
+    let offset = self.builder.ins().iadd(indexed, offset);
+
+    let value = self.builder.ins().load(
+      array_type,
+      MemFlags::new(),
+      offset,
+      Offset32::new(0),
+    );
+
+    value
   }
 }

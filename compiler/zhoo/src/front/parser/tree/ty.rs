@@ -133,8 +133,8 @@ impl PartialEq for TyKind {
       | (Self::Real, Self::Real)
       | (Self::Str, Self::Str)
       | (Self::Infer, Self::Infer) => true,
-      (Self::Fn(_, lhs), Self::Fn(_, rhs)) => lhs == rhs,
-      (Self::Array(lhs, _), Self::Array(rhs, _)) => lhs == rhs,
+      (Self::Fn(_, lhs), Self::Fn(_, rhs)) => lhs.kind == rhs.kind,
+      (Self::Array(lhs, _), Self::Array(rhs, _)) => lhs.kind == rhs.kind,
       (Self::Tuple(lhs), Self::Tuple(rhs)) => lhs == rhs,
       _ => false,
     }

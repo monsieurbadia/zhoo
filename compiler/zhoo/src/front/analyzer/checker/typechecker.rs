@@ -196,7 +196,9 @@ fn check_expr_call(
   let (fun_input_tys, fun_return_ty) =
     match context.scope_map.fun(&callee.to_string()) {
       Some(fun_ty) => fun_ty,
-      None => panic!("calling not defined function"), // fixme #1
+      None => context.program.reporter.raise(Report::Semantic(
+        SemanticKind::FunctionClash(callee.span, callee.to_string()),
+      )),
     };
 
   if inputs.len() != fun_input_tys.len() {
@@ -209,7 +211,7 @@ fn check_expr_call(
     let should_be = format!("{}({})", callee, expected_inputs);
 
     context.program.reporter.add_report(Report::Semantic(
-      SemanticKind::WrongInputCount(
+      SemanticKind::ArgumentsMismatch(
         callee.span,
         expected_inputs,
         fun_input_tys.len(),

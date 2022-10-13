@@ -6,7 +6,7 @@ pub enum GenerateKind {
   CallNotFound(Span, String),
   IdentifierNotFound(String),
   InvalidBinOp(Span, String, String),
-  WrongInputCount(Span),
+  ArgumentsMismatch(Span),
 }
 
 pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
@@ -47,8 +47,8 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       vec![],
       vec![],
     ),
-    GenerateKind::WrongInputCount(_span) => (
-      format!("{}", "missing input arguments".fg(Color::title())),
+    GenerateKind::ArgumentsMismatch(_span) => (
+      format!("{}", "arguments mismatch".fg(Color::title())),
       vec![],
       vec![],
       vec![],

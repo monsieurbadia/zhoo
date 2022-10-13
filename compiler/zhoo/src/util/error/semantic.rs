@@ -5,19 +5,51 @@ use crate::util::span::Span;
 use crate::util::strcase;
 
 pub enum SemanticKind {
+  ArgumentsMismatch(Span, String, usize, usize, String),
+  FunctionClash(Span, String),
   MainNotFound(Span, String),
   MainHasInputs(String, Span),
   NameClash(Span, String),
   NamingConvention(String, String, Span),
   OutOfLoop(Span, String),
   TypeMismatch(Span, String, String),
-  WrongInputCount(Span, String, usize, usize, String),
 }
 
 pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
   use ariadne::Fmt;
 
   match kind {
+    SemanticKind::ArgumentsMismatch(span, inputs, expected_len, actual_len, should_be) => (
+      format!("{}", "arguments mismatch".fg(Color::title())),
+      vec![(
+        *span,
+        format!(
+          "the input {argument} of type ({inputs}) are required",
+          argument = strcase::to_plural_or_singular(*expected_len, "argument"),
+        ).fg(Color::error()).to_string(),
+        Color::error(),
+      )],
+      vec![
+        format!(
+          "🤖 this function takes {expected_len} {expected_argument} but {actual_len} {actual_argument} were supplied.",
+          expected_argument = strcase::to_plural_or_singular(*expected_len, "argument"),
+          actual_argument = strcase::to_plural_or_singular(*actual_len, "argument"),
+        )
+      ],
+      vec![
+        format!("👉 {}", format_args!("try this: {should_be}").fg(Color::help())),
+      ],
+    ),
+    SemanticKind::FunctionClash(span, name) => (
+      format!("{}", format_args!("function {} not found", format_args!("`{name}`").bg(Color::hint())).fg(Color::error())),
+      vec![(
+        *span,
+        format!("this function is not defined in this scope"),
+        Color::error(),
+      )],
+      vec![format!("🤖 ...")],
+      vec![],
+    ),
     SemanticKind::MainNotFound(span, entry_point) => (
       format!(
         "{} {}",
@@ -30,7 +62,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         Color::error(),
       )],
       vec![format!(
-        "add the following code {} to your entry file",
+        "🤖 add the following code {} to your entry file",
         "`fun main() {}`".fg(Color::hint()),
       )],
       vec![],
@@ -50,7 +82,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         Color::error(),
       )],
       vec![format!(
-        "expected `fun()` \n\t     actual `fun({})`",
+        "🤖 expected `fun()` \n\t        actual `fun({})`",
         inputs.fg(Color::hint())
       )],
       vec![],
@@ -63,7 +95,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         Color::error(),
       )],
       vec![
-        format!("i'm not sure which one you want to use? rename one of them!"),
+        format!("🤖 i'm not sure which one you want to use? rename one of them!"),
       ],
       vec![],
     ),
@@ -97,26 +129,5 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![],
       vec![],
     ),
-    SemanticKind::WrongInputCount(span, inputs, expected_len, actual_len, should_be) => (
-      format!("{}", "missing input arguments".fg(Color::title())),
-      vec![(
-        *span,
-        format!(
-          "the input {argument} of type ({inputs}) are required",
-          argument = strcase::to_plural_or_singular(*expected_len, "argument"),
-        ).fg(Color::error()).to_string(),
-        Color::error(),
-      )],
-      vec![
-        format!(
-          "this function takes {expected_len} {expected_argument} but {actual_len} {actual_argument} were supplied.",
-          expected_argument = strcase::to_plural_or_singular(*expected_len, "argument"),
-          actual_argument = strcase::to_plural_or_singular(*actual_len, "argument"),
-        )
-      ],
-      vec![
-        format!("{}", format_args!("try this: {should_be}").fg(Color::help())),
-      ],
-    )
   }
 }

@@ -45,9 +45,9 @@ pub fn write_syntax_report(kind: &SyntaxKind) -> ReportMessage {
       )],
       vec![format!(
         "{}",
-        "in other languages this character is valid but the qhantoom syntax does not recognize it.".fg(Color::hint())
+        "🤖 in other languages this character is valid but the qhantoom syntax does not recognize it.".fg(Color::hint())
       )],
-      vec![format!("{}", format_args!("expected one of {expected}").fg(Color::help()))],
+      vec![format!("👉 {}", format_args!("expected one of {expected}").fg(Color::help()))],
     ),
     SyntaxKind::ExtraToken(_span, _unexpected) => (
       format!("{}", "extra token".fg(Color::title())),

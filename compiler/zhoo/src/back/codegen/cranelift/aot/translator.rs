@@ -195,7 +195,7 @@ impl<'a> Translator<'a> {
         if func.input_len != inputs.len() {
           // todo: not finished yet
           self.program.reporter.add_report(Report::Generate(
-            GenerateKind::WrongInputCount(callee.span),
+            GenerateKind::ArgumentsMismatch(callee.span),
           ))
         }
 

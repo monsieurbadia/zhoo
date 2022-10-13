@@ -113,11 +113,14 @@ impl<'a> Translator<'a> {
       ExprKind::Break(value) => self.translate_expr_break(expr, value),
       ExprKind::Continue => self.translate_expr_continue(),
       ExprKind::Block(block) => self.translate_expr_block(block),
+      ExprKind::When(condition, consequence, alternative) => {
+        self.translate_expr_when(condition, consequence, alternative)
+      }
       ExprKind::IfElse(condition, consequence, maybe_alternative) => {
         self.translate_expr_if_else(condition, consequence, maybe_alternative)
       }
-      ExprKind::When(condition, consequence, alternative) => {
-        self.translate_expr_when(condition, consequence, alternative)
+      ExprKind::Lambda(args, block_or_expr) => {
+        self.translate_expr_lambda(args, block_or_expr)
       }
       _ => todo!("tmp translate:expr => {}", expr),
     }
@@ -527,15 +530,6 @@ impl<'a> Translator<'a> {
     value
   }
 
-  fn translate_expr_if_else(
-    &mut self,
-    condition: &Expr,
-    consequence: &Expr,
-    maybe_alternative: &Option<PBox<Expr>>,
-  ) -> Value {
-    self.translate_conditional(condition, consequence, maybe_alternative)
-  }
-
   fn translate_expr_when(
     &mut self,
     condition: &PBox<Expr>,
@@ -547,6 +541,15 @@ impl<'a> Translator<'a> {
       consequence,
       &Some(alternative.clone()),
     )
+  }
+
+  fn translate_expr_if_else(
+    &mut self,
+    condition: &Expr,
+    consequence: &Expr,
+    maybe_alternative: &Option<PBox<Expr>>,
+  ) -> Value {
+    self.translate_conditional(condition, consequence, maybe_alternative)
   }
 
   fn translate_conditional(
@@ -588,5 +591,13 @@ impl<'a> Translator<'a> {
     self.builder.seal_block(merge_block);
 
     self.builder.block_params(merge_block)[0]
+  }
+
+  fn translate_expr_lambda(
+    &mut self,
+    _args: &Vec<PBox<Expr>>,
+    _block_or_expr: &Expr,
+  ) -> Value {
+    todo!()
   }
 }

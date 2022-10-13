@@ -105,6 +105,9 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
     ExprKind::IfElse(condition, consequence, maybe_alternative) => {
       check_expr_if_else(context, condition, consequence, maybe_alternative)
     }
+    ExprKind::Lambda(args, block_or_expr) => {
+      check_expr_lambda(context, args, block_or_expr)
+    }
     _ => panic!("tmp error for `check:expr`"), // fixme #1
   }
 }
@@ -462,6 +465,14 @@ fn check_expr_if_else(
   expect_equality(context, &t2, &t3);
 
   t2
+}
+
+fn check_expr_lambda(
+  _context: &mut Context,
+  _args: &Vec<PBox<Expr>>,
+  _block_or_expr: &Expr,
+) -> PBox<Ty> {
+  todo!()
 }
 
 fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {

@@ -17,6 +17,8 @@ type Notes = Vec<String>;
 
 pub type ReportMessage = (String, Labels, Notes);
 
+static EXIT_FAILURE: i32 = 1;
+
 pub enum Report {
   Io(io::Error),
   Syntax(SyntaxKind),
@@ -63,7 +65,7 @@ impl Reporter {
       Report::Syntax(ref kind) => write_syntax_report(kind),
       Report::Semantic(ref kind) => write_semantic_report(kind),
       Report::Generate(ref kind) => write_generate_report(kind),
-      Report::Io(ref error) => panic!("{error}"),
+      Report::Io(error) => panic!("{error}"),
     };
 
     let span = labels.first().map(|label| label.0).unwrap_or(Span::ZERO);
@@ -116,7 +118,7 @@ impl Reporter {
   }
 
   pub fn abort(&self) -> ! {
-    process::exit(1)
+    process::exit(EXIT_FAILURE)
   }
 }
 

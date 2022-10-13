@@ -45,6 +45,10 @@ impl Ty {
     Self::new(TyKind::Str, span)
   }
 
+  pub const fn with_array(ty: PBox<Ty>, size: i64, span: Span) -> Self {
+    Self::new(TyKind::Array(ty, size), span)
+  }
+
   pub const fn with_fn(
     args: Vec<PBox<Ty>>,
     return_ty: PBox<Ty>,

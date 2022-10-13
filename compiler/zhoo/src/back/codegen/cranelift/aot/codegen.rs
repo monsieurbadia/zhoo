@@ -16,7 +16,7 @@ use crate::util::constant::{
 
 use crate::util::pack;
 
-use codegen::ir::GlobalValue;
+use codegen::ir::{ArgumentPurpose, GlobalValue};
 use cranelift::prelude::{Block as CBlock, *};
 use cranelift_codegen::settings::Flags;
 use cranelift_codegen::{settings, Context};
@@ -117,6 +117,13 @@ impl<'a> Codegen<'a> {
     }
 
     signature.returns.push(AbiParam::new(types::I64));
+
+    let vm_context = AbiParam::special(
+      self.module.target_config().pointer_type(),
+      ArgumentPurpose::VMContext,
+    );
+
+    signature.params.push(vm_context);
 
     let func_name = fun.prototype.pattern.to_string();
 

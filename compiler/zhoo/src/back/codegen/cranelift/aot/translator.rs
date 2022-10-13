@@ -1,3 +1,5 @@
+use crate::back::codegen::cranelift::allocator;
+
 use crate::back::codegen::cranelift::interface::{
   CompiledFunction, DataContextBuilder, VariableBuilder,
 };
@@ -7,8 +9,8 @@ use crate::front::parser::tree::PBox;
 use crate::util::error::{GenerateKind, Report};
 
 use cranelift::prelude::{
-  types, Block as CBlock, EntityRef, FunctionBuilder, InstBuilder, IntCC,
-  Value, Variable,
+  types, Block as CBlock, EntityRef, FunctionBuilder, GlobalValueData, Imm64,
+  InstBuilder, IntCC, Value, Variable,
 };
 
 use cranelift_codegen::ir::GlobalValue;
@@ -602,7 +604,46 @@ impl<'a> Translator<'a> {
     todo!()
   }
 
-  fn translate_expr_array(&mut self, _elements: &Vec<PBox<Expr>>) -> Value {
-    todo!()
+  fn translate_expr_array(&mut self, elements: &Vec<PBox<Expr>>) -> Value {
+    use cranelift_codegen::ir::immediates::Offset32;
+    use cranelift_codegen::ir::MemFlags;
+
+    let vm_context = self
+      .builder
+      .func
+      .create_global_value(GlobalValueData::VMContext);
+
+    let global_type = self.module.target_config().pointer_type();
+    let array_bytes = elements.len() * global_type.bytes() as usize;
+    let offset = Imm64::new(allocator::alloc(array_bytes));
+
+    let global_value_data =
+      self
+        .builder
+        .func
+        .create_global_value(GlobalValueData::IAddImm {
+          base: vm_context,
+          offset,
+          global_type,
+        });
+
+    let global_value = self
+      .builder
+      .ins()
+      .global_value(global_type, global_value_data);
+
+    for (x, element) in elements.iter().enumerate() {
+      let value = self.translate_expr(element);
+      let offset = global_type.bytes() * x as u32;
+
+      self.builder.ins().store(
+        MemFlags::new(),
+        value,
+        global_value,
+        Offset32::new(offset as i32),
+      );
+    }
+
+    global_value
   }
 }

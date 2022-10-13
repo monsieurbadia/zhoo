@@ -478,9 +478,9 @@ fn check_expr_lambda(
 
 fn check_expr_array(
   _context: &mut Context,
-  _elements: &Vec<PBox<Expr>>,
+  elements: &Vec<PBox<Expr>>,
 ) -> PBox<Ty> {
-  todo!()
+  Ty::with_array(Ty::INT.into(), elements.len() as i64, Span::new(0, 0)).into()
 }
 
 fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {

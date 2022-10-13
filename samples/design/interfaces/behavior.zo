@@ -1,0 +1,5 @@
+behavior foo {}
+
+behavior ToSpan {
+  fun to_span(): Span;
+}

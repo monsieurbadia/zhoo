@@ -1,0 +1,8 @@
+fun main() {
+  imu maybe_x: int = Some(1);
+
+  match maybe_x {
+    Some(x) => println("{x}"),
+    None => println("none"),
+  }
+}

@@ -1,7 +1,9 @@
 fun main() {
   imu foo: int = 3;
   imu bar: int = 10;
-  imu foobar: int = foo + bar;
+  mut foobar: int = 0;
+
+  foobar = foo + bar;
 
   foobar
 }

@@ -1,5 +1,5 @@
 val bin: int = 0b11110000;  -- binary
-val oct: uint = 0o77;       -- octal
+val oct: int = 0o77;       -- octal
 val hex: int = 0xfff_fff;   -- hexadecimal
 val dec: int = 1;           -- decimal
 

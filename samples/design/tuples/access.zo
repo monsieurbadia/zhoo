@@ -1,0 +1,5 @@
+fun main(): int {
+  imu x: (int, int) = (1, 2);
+
+  x.1
+}

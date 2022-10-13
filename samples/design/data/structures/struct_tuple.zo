@@ -1,0 +1,2 @@
+-- struct tuple
+struct Foo(int, int);

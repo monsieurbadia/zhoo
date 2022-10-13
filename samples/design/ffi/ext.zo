@@ -1,7 +1,3 @@
 pub ext foo();
 ext bar();
 ext foobar(x: int);
-
-ext barfoo(x: real): real {
-  0.0
-}

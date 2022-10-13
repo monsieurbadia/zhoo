@@ -1,8 +1,0 @@
-fun main() {
-  imu x: uint = Some(1);
-
-  match x {
-    Some(xx) => println("{xx}"),
-    None => println("none"),
-  }
-}

@@ -1,3 +1,4 @@
+-- struct declaration
 struct Foo {
   bar: int,
 }

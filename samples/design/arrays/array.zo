@@ -1,3 +1,4 @@
 fun main() {
-  imu x: real[3] = [1.0, 2.0, 3.0];
+  imu x: real[3] = [1.0, 2.0, 3.0];   -- sized array
+  imu x: real[] = [1.0, 2.0, 3.0];    -- dynamic array
 }

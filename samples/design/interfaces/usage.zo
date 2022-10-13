@@ -1,0 +1,14 @@
+behavior ToSpan {
+  fun to_span(me): Span;
+}
+
+struct Foo {
+  start: int,
+  end: int
+}
+
+impl ToSpan for Span {
+  fun to_span(me): Me {
+    Span::new(me.start, me.end)
+  }
+}

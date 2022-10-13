@@ -1,4 +1,3 @@
--- not defined yet
 async fun main() {
   println("asynchronous");
 }

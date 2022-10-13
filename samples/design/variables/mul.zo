@@ -1,2 +1,6 @@
 -- multiples
 val x y z: int = 1;
+
+fun main() {
+  x + y + z
+}

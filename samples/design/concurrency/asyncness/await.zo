@@ -1,1 +1,5 @@
--- not defined yet
+async bar() {}
+
+async fun main() {
+  bar().await
+}

@@ -9,7 +9,6 @@ repository = "https://github.com/monsieurbadia/zhoo"
 version.workspace = true
 
 [lib]
-# crate-type = ["staticlib"]
 test = false
 
 [dependencies]

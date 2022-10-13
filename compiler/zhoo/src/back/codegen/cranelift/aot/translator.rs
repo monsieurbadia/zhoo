@@ -608,6 +608,7 @@ impl<'a> Translator<'a> {
     todo!()
   }
 
+  // fixme: [1]    46739 segmentation fault
   fn translate_expr_array(&mut self, elements: &Vec<PBox<Expr>>) -> Value {
     let vm_context = self
       .builder

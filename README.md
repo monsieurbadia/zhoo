@@ -64,6 +64,14 @@ bring your program to the web will be super simple. add the `wasm` keyword et vo
   <img src="./misc/overview/zhoo-wasm.png" />
 </p>
 
+## error messages
+
+`zhoo` offers nice error messages, the reports are clear and rich to help the programmer understand what is wrong with the program. the graphical aspect of the errors allows people with disabilities *(e.g. colour blind)* not to lose visibility. the `zhoo` compiler is your best buddy and your first choice ally.
+
+<p align="center">
+  <img src="./misc/overview/zhoo-report-errors.png" />
+</p>
+
 ## compiler phases
 
 for the moment the proof of concept has only three phases:

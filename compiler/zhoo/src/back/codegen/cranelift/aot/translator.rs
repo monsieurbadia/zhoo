@@ -122,6 +122,7 @@ impl<'a> Translator<'a> {
       ExprKind::Lambda(args, block_or_expr) => {
         self.translate_expr_lambda(args, block_or_expr)
       }
+      ExprKind::Array(elements) => self.translate_expr_array(elements),
       _ => todo!("tmp translate:expr => {}", expr),
     }
   }
@@ -598,6 +599,10 @@ impl<'a> Translator<'a> {
     _args: &Vec<PBox<Expr>>,
     _block_or_expr: &Expr,
   ) -> Value {
+    todo!()
+  }
+
+  fn translate_expr_array(&mut self, _elements: &Vec<PBox<Expr>>) -> Value {
     todo!()
   }
 }

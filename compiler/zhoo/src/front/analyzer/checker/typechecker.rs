@@ -108,6 +108,7 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
     ExprKind::Lambda(args, block_or_expr) => {
       check_expr_lambda(context, args, block_or_expr)
     }
+    ExprKind::Array(elements) => check_expr_array(context, elements),
     _ => panic!("tmp error for `check:expr`"), // fixme #1
   }
 }
@@ -471,6 +472,13 @@ fn check_expr_lambda(
   _context: &mut Context,
   _args: &Vec<PBox<Expr>>,
   _block_or_expr: &Expr,
+) -> PBox<Ty> {
+  todo!()
+}
+
+fn check_expr_array(
+  _context: &mut Context,
+  _elements: &Vec<PBox<Expr>>,
 ) -> PBox<Ty> {
   todo!()
 }

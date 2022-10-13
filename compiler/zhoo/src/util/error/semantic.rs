@@ -6,7 +6,8 @@ use crate::util::strcase;
 
 pub enum SemanticKind {
   ArgumentsMismatch(Span, String, usize, usize, String),
-  FunctionClash(Span, String),
+  FunctionNotFound(Span, String),
+  IdentifierNotFound(Span, String),
   MainNotFound(Span, String),
   MainHasInputs(String, Span),
   NameClash(Span, String),
@@ -20,6 +21,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
 
   match kind {
     SemanticKind::ArgumentsMismatch(span, inputs, expected_len, actual_len, should_be) => (
+      ariadne::ReportKind::Error,
       format!("{}", "arguments mismatch".fg(Color::title())),
       vec![(
         *span,
@@ -40,17 +42,30 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         format!("👉 {}", format_args!("try this: {should_be}").fg(Color::help())),
       ],
     ),
-    SemanticKind::FunctionClash(span, name) => (
+    SemanticKind::FunctionNotFound(span, name) => (
+      ariadne::ReportKind::Error,
       format!("{}", format_args!("function {} not found", format_args!("`{name}`").bg(Color::hint())).fg(Color::error())),
       vec![(
         *span,
-        format!("this function is not defined in this scope"),
+        "this call requires a function that does not exist in this scope.".to_string(),
         Color::error(),
       )],
-      vec![format!("🤖 ...")],
+      vec![format!("🤖 are you sure you have defined it correctly because i'm stumped")],
+      vec![],
+    ),
+    SemanticKind::IdentifierNotFound(span, name) => (
+      ariadne::ReportKind::Error,
+      format!("{}", format_args!("identifier {} not found", format_args!("`{name}`").bg(Color::hint())).fg(Color::error())),
+      vec![(
+        *span,
+        "this identifier do no exist in this scope".to_string(),
+        Color::error(),
+      )],
+      vec![format!("🤖 are you sure you have defined it correctly because i'm stumped")],
       vec![],
     ),
     SemanticKind::MainNotFound(span, entry_point) => (
+      ariadne::ReportKind::Error,
       format!(
         "{} {}",
         "`main`".fg(Color::hint()),
@@ -68,10 +83,11 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![],
     ),
     SemanticKind::MainHasInputs(inputs, span) => (
+      ariadne::ReportKind::Error,
       format!(
         "{} {}",
         "`main`".fg(Color::hint()),
-        "function defined with args".fg(Color::title()),
+        "function defined with arguments".fg(Color::title()),
       ),
       vec![(
         *span,
@@ -88,6 +104,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![],
     ),
     SemanticKind::NameClash(span, name) => (
+      ariadne::ReportKind::Error,
       format!("variable `{}` already exist", name.fg(Color::hint())),
       vec![(
         *span,
@@ -100,6 +117,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![],
     ),
     SemanticKind::NamingConvention(identifier, naming, span) => (
+      ariadne::ReportKind::Warning,
       format!("{} {} {} {}", "variable".fg(Color::title()), format!("`{identifier}`").fg(Color::hint()),  "should have a".fg(Color::title()), format!("`{naming}`").fg(Color::title())),
       vec![(
         *span,
@@ -110,6 +128,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![],
     ),
     SemanticKind::OutOfLoop(span, behavior) => (
+      ariadne::ReportKind::Error,
       format!("{} {}", format_args!("`{}`", behavior.fg(Color::hint())), "outside of the loop".fg(Color::title())),
       vec![(
         *span,
@@ -120,6 +139,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![],
     ),
     SemanticKind::TypeMismatch(span, t1, t2) => (
+      ariadne::ReportKind::Error,
       format!("{}", "type mismatch".fg(Color::title())),
       vec![(
         *span,

@@ -3,7 +3,7 @@ use crate::util::error::ReportMessage;
 use crate::util::span::Span;
 
 pub enum GenerateKind {
-  CallNotFound(Span, String),
+  CallFunctionNotFound(Span, String),
   IdentifierNotFound(String),
   InvalidBinOp(Span, String, String),
   ArgumentsMismatch(Span),
@@ -13,7 +13,8 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
   use ariadne::Fmt;
 
   match kind {
-    GenerateKind::CallNotFound(_span, name) => (
+    GenerateKind::CallFunctionNotFound(_span, name) => (
+      ariadne::ReportKind::Error,
       format!(
         "call {} not found",
         format_args!("`{}`", name.fg(Color::error())).fg(Color::error())
@@ -23,6 +24,7 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       vec![],
     ),
     GenerateKind::IdentifierNotFound(name) => (
+      ariadne::ReportKind::Error,
       format!(
         "identifier {} not found",
         format_args!("`{}`", name.fg(Color::error())).fg(Color::error())
@@ -32,6 +34,7 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       vec![],
     ),
     GenerateKind::InvalidBinOp(span, lhs, rhs) => (
+      ariadne::ReportKind::Error,
       format!("{}", "binary operation not valid".fg(Color::title())),
       vec![(
         *span,
@@ -48,6 +51,7 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       vec![],
     ),
     GenerateKind::ArgumentsMismatch(_span) => (
+      ariadne::ReportKind::Error,
       format!("{}", "arguments mismatch".fg(Color::title())),
       vec![],
       vec![],

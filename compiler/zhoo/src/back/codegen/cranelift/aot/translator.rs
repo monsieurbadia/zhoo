@@ -217,7 +217,7 @@ impl<'a> Translator<'a> {
         call_results[0]
       }
       None => self.program.reporter.raise(Report::Generate(
-        GenerateKind::CallNotFound(callee.span, callee.to_string()),
+        GenerateKind::CallFunctionNotFound(callee.span, callee.to_string()),
       )),
     }
   }

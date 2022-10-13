@@ -94,7 +94,7 @@ source --> | parser | -- ast --> | analyzer | -- ast --> | codegen | --> exe
 | `compile` | compile with `llvm`      | `cargo run -- compile --input <path> --backend llvm` | ko     |
 | `run`     | run the program          | `cargo run -- run`                                   | ok     |
 
-the compiler generates two files: `main.o` and `main` in the `/program` directory. the `main` file is an executable which will be run by the command: `cargo run -- run`.
+the compiler generates two files: `main.o` and `main` in the `./program` directory. the `main` file is an executable which will be run by the command: `cargo run -- run`.
 
 ## contribution
 

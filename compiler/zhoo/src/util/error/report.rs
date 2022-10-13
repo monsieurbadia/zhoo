@@ -12,11 +12,12 @@ use std::default::Default;
 use std::path::{Path, PathBuf};
 use std::{io, process};
 
+type Kind = ariadne::ReportKind;
 type Labels = Vec<(Span, String, ariadne::Color)>;
 type Notes = Vec<String>;
 type Helps = Vec<String>;
 
-pub type ReportMessage = (String, Labels, Notes, Helps);
+pub type ReportMessage = (Kind, String, Labels, Notes, Helps);
 
 static EXIT_FAILURE: i32 = 1;
 
@@ -62,7 +63,7 @@ impl Reporter {
   }
 
   pub fn add_report(&self, report: Report) {
-    let (message, labels, notes, helps) = match report {
+    let (kind, message, labels, notes, helps) = match report {
       Report::Syntax(ref kind) => write_syntax_report(kind),
       Report::Semantic(ref kind) => write_semantic_report(kind),
       Report::Generate(ref kind) => write_generate_report(kind),
@@ -77,7 +78,7 @@ impl Reporter {
 
     let mut report: ReportBuilder<(String, std::ops::Range<usize>)> =
       ariadne::Report::build(
-        ariadne::ReportKind::Error,
+        kind,
         path.display().to_string(),
         span.lo as usize,
       )

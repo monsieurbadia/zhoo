@@ -80,7 +80,7 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
     ExprKind::Decl(decl) => check_expr_decl(context, decl),
     ExprKind::Lit(lit) => check_expr_lit(lit),
     ExprKind::Identifier(identifier) => {
-      check_expr_identifier(context, identifier)
+      check_expr_identifier(context, expr.span, identifier)
     }
     ExprKind::Call(callee, args) => check_expr_call(context, callee, args),
     ExprKind::UnOp(op, rhs) => check_expr_un_op(context, op, rhs),
@@ -178,13 +178,19 @@ fn check_expr_lit_str(span: Span) -> PBox<Ty> {
   Ty::with_str(span).into()
 }
 
-fn check_expr_identifier(context: &mut Context, identifier: &str) -> PBox<Ty> {
+fn check_expr_identifier(
+  context: &mut Context,
+  span: Span,
+  identifier: &str,
+) -> PBox<Ty> {
   if let Some(ty) = context.scope_map.decl(identifier) {
-    ty.clone()
+    return ty.clone();
   } else if let Some(ty) = context.scope_map.fun(identifier) {
     ty.1.clone()
   } else {
-    panic!("tmp error for `check:expr`"); // fixme #1
+    context.program.reporter.raise(Report::Semantic(
+      SemanticKind::IdentifierNotFound(span, identifier.to_string()),
+    ));
   }
 }
 
@@ -197,7 +203,7 @@ fn check_expr_call(
     match context.scope_map.fun(&callee.to_string()) {
       Some(fun_ty) => fun_ty,
       None => context.program.reporter.raise(Report::Semantic(
-        SemanticKind::FunctionClash(callee.span, callee.to_string()),
+        SemanticKind::FunctionNotFound(callee.span, callee.to_string()),
       )),
     };
 

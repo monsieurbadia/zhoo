@@ -25,18 +25,21 @@ pub fn write_syntax_report(kind: &SyntaxKind) -> ReportMessage {
 
   match kind {
     SyntaxKind::InvalidToken(_span) => (
+      ariadne::ReportKind::Error,
       format!("{}", "invalid token".fg(Color::title())),
       vec![],
       vec![],
       vec![]
     ),
     SyntaxKind::UnrecognizedEOF(_span, _eof) => (
+      ariadne::ReportKind::Error,
       format!("{}", "unrecognized eof".fg(Color::title())),
       vec![],
       vec![],
       vec![]
     ),
     SyntaxKind::UnrecognizedToken(span, expected) => (
+      ariadne::ReportKind::Error,
       format!("{}", "unrecognized character".fg(Color::title())),
       vec![(
         *span,
@@ -50,12 +53,14 @@ pub fn write_syntax_report(kind: &SyntaxKind) -> ReportMessage {
       vec![format!("👉 {}", format_args!("expected one of {expected}").fg(Color::help()))],
     ),
     SyntaxKind::ExtraToken(_span, _unexpected) => (
+      ariadne::ReportKind::Error,
       format!("{}", "extra token".fg(Color::title())),
       vec![],
       vec![],
       vec![]
     ),
     SyntaxKind::User(error) => (
+      ariadne::ReportKind::Error,
       format!("{}", error.fg(Color::title())),
       vec![],
       vec![],

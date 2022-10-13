@@ -21,16 +21,20 @@ pub fn parse<P: Into<PathBuf>>(pathname: P) -> Program {
   match parser.parse(source_code) {
     Ok(node) => Program::new(node.0, reporter, node.1),
     Err(error) => match error {
-      ParseError::InvalidToken { location } => reporter.raise(Report::Syntax(
-        SyntaxKind::InvalidToken(Span::new(location, location)),
-      )),
+      ParseError::InvalidToken { location } => {
+        reporter.raise(Report::Syntax(SyntaxKind::InvalidToken(Span::new(
+          location, location,
+        ))));
+      }
       ParseError::UnrecognizedEOF {
         location,
         expected: _,
-      } => reporter.raise(Report::Syntax(SyntaxKind::UnrecognizedEOF(
-        Span::new(location, location),
-        String::new(),
-      ))),
+      } => {
+        reporter.raise(Report::Syntax(SyntaxKind::UnrecognizedEOF(
+          Span::new(location, location),
+          String::new(),
+        )));
+      }
       ParseError::UnrecognizedToken { token, expected } => {
         let span = Span::new(token.0, token.2);
 
@@ -59,16 +63,16 @@ pub fn parse<P: Into<PathBuf>>(pathname: P) -> Program {
 
         reporter.raise(Report::Syntax(SyntaxKind::UnrecognizedToken(
           span, expected,
-        )))
+        )));
       }
       ParseError::ExtraToken { token } => {
         reporter.raise(Report::Syntax(SyntaxKind::ExtraToken(
           Span::new(token.0, token.2),
           token.1.to_string(),
-        )))
+        )));
       }
       ParseError::User { error } => {
-        reporter.raise(Report::Syntax(SyntaxKind::User(error.to_string())))
+        reporter.raise(Report::Syntax(SyntaxKind::User(error.to_string())));
       }
     },
   }

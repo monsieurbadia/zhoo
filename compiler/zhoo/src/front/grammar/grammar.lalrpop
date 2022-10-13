@@ -169,7 +169,7 @@ TyFun: PBox<Ty> = {
   <lo:@L> "Fn" "(" <tys:Comma<Ty>> ")" ":" <ty:Ty> <hi:@R> => pbox(Ty::new(TyKind::Fn(tys, ty), Span::new(lo, hi))),
 };
 TyArray: PBox<Ty> = {
-  <lo:@L> <indexed:TyPrim> "[" <size:LiteralInt> "]" <hi:@R> => pbox(Ty::new(TyKind::Array(indexed, size), Span::new(lo, hi))),
+  <lo:@L> <indexed:TyPrim> "[" <size:LiteralInt?> "]" <hi:@R> => pbox(Ty::new(TyKind::Array(indexed, size), Span::new(lo, hi))),
 };
 TyTuple: PBox<Ty> = {
   <lo:@L> "(" <tys:Comma<TyPrim>> ")" <hi:@R> => pbox(Ty::new(TyKind::Tuple(tys), Span::new(lo, hi))),

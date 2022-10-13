@@ -428,7 +428,13 @@ impl fmt::Display for TyKind {
       Self::Str => write!(f, "str"),
       Self::Infer => write!(f, "infer"),
       Self::Fn(args, ty) => write!(f, "Fn({}): {ty}", Sep(args, ", ")),
-      Self::Array(indexed, size) => write!(f, "{indexed}[{size}]"),
+      Self::Array(indexed, maybe_size) => {
+        write!(f, "{indexed}")?;
+
+        let Some(size) = maybe_size else { return write!(f, "[]"); };
+
+        write!(f, "[{size}]")
+      }
       Self::Tuple(tys) => write!(f, "({})", Sep(tys, ", ")),
     }
   }

@@ -184,7 +184,7 @@ fn check_expr_identifier(
   identifier: &str,
 ) -> PBox<Ty> {
   if let Some(ty) = context.scope_map.decl(identifier) {
-    return ty.clone();
+    ty.clone()
   } else if let Some(ty) = context.scope_map.fun(identifier) {
     ty.1.clone()
   } else {
@@ -491,7 +491,8 @@ fn check_expr_array(
   _context: &mut Context,
   elements: &[PBox<Expr>],
 ) -> PBox<Ty> {
-  Ty::with_array(Ty::INT.into(), elements.len() as i64, Span::new(0, 0)).into()
+  Ty::with_array(Ty::INT.into(), Some(elements.len() as i64), Span::new(0, 0))
+    .into()
 }
 
 fn check_expr_index(

@@ -45,7 +45,7 @@ impl Ty {
     Self::new(TyKind::Str, span)
   }
 
-  pub const fn with_array(ty: PBox<Ty>, size: i64, span: Span) -> Self {
+  pub const fn with_array(ty: PBox<Ty>, size: Option<i64>, span: Span) -> Self {
     Self::new(TyKind::Array(ty, size), span)
   }
 
@@ -106,7 +106,7 @@ pub enum TyKind {
   Str,
   Infer,
   Fn(Vec<PBox<Ty>>, PBox<Ty>),
-  Array(PBox<Ty>, i64),
+  Array(PBox<Ty>, Option<i64>),
   Tuple(Vec<PBox<Ty>>),
 }
 

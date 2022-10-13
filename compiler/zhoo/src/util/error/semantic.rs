@@ -33,6 +33,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         "add the following code {} to your entry file",
         "`fun main() {}`".fg(Color::hint()),
       )],
+      vec![],
     ),
     SemanticKind::MainHasInputs(inputs, span) => (
       format!(
@@ -52,6 +53,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         "expected `fun()` \n\t     actual `fun({})`",
         inputs.fg(Color::hint())
       )],
+      vec![],
     ),
     SemanticKind::NameClash(span, name) => (
       format!("variable `{}` already exist", name.fg(Color::hint())),
@@ -60,6 +62,9 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         format!("{}", "this name is already declared in the scope".fg(Color::error())),
         Color::error(),
       )],
+      vec![
+        format!("i'm not sure which one you want to use? rename one of them!"),
+      ],
       vec![],
     ),
     SemanticKind::NamingConvention(identifier, naming, span) => (
@@ -70,6 +75,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         Color::error(),
       )],
       vec![],
+      vec![],
     ),
     SemanticKind::OutOfLoop(span, behavior) => (
       format!("{} {}", format_args!("`{}`", behavior.fg(Color::hint())), "outside of the loop".fg(Color::title())),
@@ -79,6 +85,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         Color::error(),
       )],
       vec![],
+      vec![],
     ),
     SemanticKind::TypeMismatch(span, t1, t2) => (
       format!("{}", "type mismatch".fg(Color::title())),
@@ -87,6 +94,7 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
         format!("expected `{t1}`, found `{t2}`").fg(Color::error()).to_string(),
         Color::error(),
       )],
+      vec![],
       vec![],
     ),
     SemanticKind::WrongInputCount(span, inputs, expected_len, actual_len, should_be) => (
@@ -101,10 +109,13 @@ pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
       )],
       vec![
         format!(
-          "this function takes {expected_len} {expected_argument} but {actual_len} {actual_argument} were supplied. try this: {should_be}",
+          "this function takes {expected_len} {expected_argument} but {actual_len} {actual_argument} were supplied.",
           expected_argument = strcase::to_plural_or_singular(*expected_len, "argument"),
           actual_argument = strcase::to_plural_or_singular(*actual_len, "argument"),
         )
+      ],
+      vec![
+        format!("{}", format_args!("try this: {should_be}").fg(Color::help())),
       ],
     )
   }

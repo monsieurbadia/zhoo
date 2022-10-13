@@ -58,7 +58,6 @@ fn compiling(settings: Settings) {
 
   match codegen.build(settings.ir) {
     Ok(done) => {
-      // println!("{:?}", program);
       done();
     }
     Err(error) => {

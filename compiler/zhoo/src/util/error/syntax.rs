@@ -24,17 +24,42 @@ pub fn write_syntax_report(kind: &SyntaxKind) -> ReportMessage {
   use ariadne::Fmt;
 
   match kind {
-    SyntaxKind::InvalidToken(_span) => (format!("{}", "invalid token".fg(Color::title())), vec![], vec![]),
-    SyntaxKind::UnrecognizedEOF(_span, _eof) => (format!("{}", "unrecognized eof".fg(Color::title())), vec![], vec![]),
-    SyntaxKind::UnrecognizedToken(_span, _expected) => (
-      format!("{}", "unrecognized character".fg(Color::title())),
+    SyntaxKind::InvalidToken(_span) => (
+      format!("{}", "invalid token".fg(Color::title())),
       vec![],
+      vec![],
+      vec![]
+    ),
+    SyntaxKind::UnrecognizedEOF(_span, _eof) => (
+      format!("{}", "unrecognized eof".fg(Color::title())),
+      vec![],
+      vec![],
+      vec![]
+    ),
+    SyntaxKind::UnrecognizedToken(span, expected) => (
+      format!("{}", "unrecognized character".fg(Color::title())),
+      vec![(
+        *span,
+        format!("{}", "um... i can't do anything with this character.".fg(Color::error())),
+        Color::error(),
+      )],
       vec![format!(
         "{}",
         "in other languages this character is valid but the qhantoom syntax does not recognize it.".fg(Color::hint())
       )],
+      vec![format!("{}", format_args!("expected one of {expected}").fg(Color::help()))],
     ),
-    SyntaxKind::ExtraToken(_span, _unexpected) => (format!("{}", "extra token".fg(Color::title())), vec![], vec![]),
-    SyntaxKind::User(error) => (format!("{}", error.fg(Color::title())), vec![], vec![]),
+    SyntaxKind::ExtraToken(_span, _unexpected) => (
+      format!("{}", "extra token".fg(Color::title())),
+      vec![],
+      vec![],
+      vec![]
+    ),
+    SyntaxKind::User(error) => (
+      format!("{}", error.fg(Color::title())),
+      vec![],
+      vec![],
+      vec![]
+    ),
   }
 }

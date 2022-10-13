@@ -14,8 +14,9 @@ use std::{io, process};
 
 type Labels = Vec<(Span, String, ariadne::Color)>;
 type Notes = Vec<String>;
+type Helps = Vec<String>;
 
-pub type ReportMessage = (String, Labels, Notes);
+pub type ReportMessage = (String, Labels, Notes, Helps);
 
 static EXIT_FAILURE: i32 = 1;
 
@@ -61,7 +62,7 @@ impl Reporter {
   }
 
   pub fn add_report(&self, report: Report) {
-    let (message, labels, notes) = match report {
+    let (message, labels, notes, helps) = match report {
       Report::Syntax(ref kind) => write_syntax_report(kind),
       Report::Semantic(ref kind) => write_semantic_report(kind),
       Report::Generate(ref kind) => write_generate_report(kind),
@@ -94,6 +95,10 @@ impl Reporter {
 
     for note in notes {
       report = report.with_note(note);
+    }
+
+    for help in helps {
+      report = report.with_help(help);
     }
 
     eprintln!();

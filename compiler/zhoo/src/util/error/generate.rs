@@ -20,12 +20,14 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       ),
       vec![],
       vec![],
+      vec![],
     ),
     GenerateKind::IdentifierNotFound(name) => (
       format!(
         "identifier {} not found",
         format_args!("`{}`", name.fg(Color::error())).fg(Color::error())
       ),
+      vec![],
       vec![],
       vec![],
     ),
@@ -43,9 +45,11 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
         Color::error(),
       )],
       vec![],
+      vec![],
     ),
     GenerateKind::WrongInputCount(_span) => (
       format!("{}", "missing input arguments".fg(Color::title())),
+      vec![],
       vec![],
       vec![],
     ),

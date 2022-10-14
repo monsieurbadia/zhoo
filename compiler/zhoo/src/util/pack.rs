@@ -51,6 +51,8 @@ pub fn make_exe_with_link(
       "-fno-pie",
       "-pthread",
       "-ldl",
+      "-Wl",
+      "no-as-needed",
       path_input,
       path_link,
       "-o",

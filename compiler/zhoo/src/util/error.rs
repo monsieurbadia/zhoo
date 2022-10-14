@@ -3,10 +3,8 @@ mod report;
 mod semantic;
 mod syntax;
 
-use super::color;
-
 pub use generate::GenerateKind;
-pub use report::{Report, ReportMessage, Reporter};
+pub use report::{Report, Reporter};
 pub use semantic::SemanticKind;
 pub use syntax::SyntaxKind;
 

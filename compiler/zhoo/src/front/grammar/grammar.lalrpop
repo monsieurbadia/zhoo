@@ -136,13 +136,13 @@ macro_decl_def: PBox<MacroDeclDef> = {
   macro_decl_brackets,
 };
 macro_decl_parenthesis: PBox<MacroDeclDef> = {
-  <lo:@L> "(" <macro_rules:macro_rules> ")" <hi:@R> => pbox(MacroDeclDef::new(macro_rules, Span::new(lo, hi))),
+  <lo:@L> "(" <macro_rules:macro_rules> ")" <hi:@R> => pbox(MacroDeclDef::new(MacroDeclDefKind::Parenthesis, macro_rules, Span::new(lo, hi))),
 };
 macro_decl_braces: PBox<MacroDeclDef> = {
-  <lo:@L> "{" <macro_rules:macro_rules> "}" <hi:@R> => pbox(MacroDeclDef::new(macro_rules, Span::new(lo, hi))),
+  <lo:@L> "{" <macro_rules:macro_rules> "}" <hi:@R> => pbox(MacroDeclDef::new(MacroDeclDefKind::Braces, macro_rules, Span::new(lo, hi))),
 };
 macro_decl_brackets: PBox<MacroDeclDef> = {
-  <lo:@L> "[" <macro_rules:macro_rules> "]" <hi:@R> => pbox(MacroDeclDef::new(macro_rules, Span::new(lo, hi))),
+  <lo:@L> "[" <macro_rules:macro_rules> "]" <hi:@R> => pbox(MacroDeclDef::new(MacroDeclDefKind::Brackets, macro_rules, Span::new(lo, hi))),
 };
 macro_match: () = {
   token_and_delimiters,
@@ -168,7 +168,39 @@ token_punctuations: () = {
   "=",
   "&",
   "|",
+  "<",
+  ">",
+  ".",
+  ",",
+  ":",
+  ";",
+  "\\",
   "@",
+  "?",
+  "$",
+  "_",
+  "~",
+  "==",
+  "&&",
+  "||",
+  "<<",
+  ">>",
+  "..",
+  "::",
+  "+=",
+  "-=",
+  "*=",
+  "/=",
+  "%=",
+  "!=",
+  "&=",
+  "|=",
+  "<=",
+  ">=",
+  ":=",
+  "->",
+  "<-",
+  "=>",
 };
 token_delimiters: () = {
   "{",
@@ -276,7 +308,6 @@ Ty: PBox<Ty> = {
   TyTuple,
 };
 TyPrim: PBox<Ty> = {
-
   <path:Path<Epsilon>> => pbox(Ty::from(path)),
 };
 TyFun: PBox<Ty> = {
@@ -633,7 +664,7 @@ match {
   // line comments
   r"--[^\n\r]*[\n\r]*" => {},
   // doc line comments
-  r"-!-[^\n\r]*[\n\r]*" => {},
+  r"-![^\n\r]*[\n\r]*" => {},
 } else {
   _
 }

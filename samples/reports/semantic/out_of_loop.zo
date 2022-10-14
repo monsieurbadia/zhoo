@@ -1,0 +1,9 @@
+fun foo() {
+  continue
+}
+
+fun bar() {
+  break
+}
+
+fun main() {}

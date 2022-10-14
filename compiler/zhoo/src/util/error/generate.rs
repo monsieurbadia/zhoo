@@ -1,6 +1,11 @@
-use crate::util::color::Color;
-use crate::util::error::ReportMessage;
+use super::report::ReportMessage;
+
 use crate::util::span::Span;
+
+// todo (?): #1
+//
+// normally, there should be no similar errors in the
+// type checking phase, is right?
 
 pub enum GenerateKind {
   CallFunctionNotFound(Span, String),
@@ -10,11 +15,15 @@ pub enum GenerateKind {
 }
 
 pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
+  use super::report::{ReportKind, REPORT_ERROR};
+
+  use crate::util::color::Color;
+
   use ariadne::Fmt;
 
   match kind {
     GenerateKind::CallFunctionNotFound(_span, name) => (
-      ariadne::ReportKind::Error,
+      ReportKind::Error(REPORT_ERROR),
       format!(
         "call {} not found",
         format_args!("`{}`", name.fg(Color::error())).fg(Color::error())
@@ -24,7 +33,7 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       vec![],
     ),
     GenerateKind::IdentifierNotFound(name) => (
-      ariadne::ReportKind::Error,
+      ReportKind::Error(REPORT_ERROR),
       format!(
         "identifier {} not found",
         format_args!("`{}`", name.fg(Color::error())).fg(Color::error())
@@ -34,7 +43,7 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       vec![],
     ),
     GenerateKind::InvalidBinOp(span, lhs, rhs) => (
-      ariadne::ReportKind::Error,
+      ReportKind::Error(REPORT_ERROR),
       format!("{}", "binary operation not valid".fg(Color::title())),
       vec![(
         *span,
@@ -51,7 +60,7 @@ pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
       vec![],
     ),
     GenerateKind::ArgumentsMismatch(_span) => (
-      ariadne::ReportKind::Error,
+      ReportKind::Error(REPORT_ERROR),
       format!("{}", "arguments mismatch".fg(Color::title())),
       vec![],
       vec![],

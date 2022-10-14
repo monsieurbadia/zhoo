@@ -1,0 +1,7 @@
+fun foo(x: int): int {
+  x * x
+}
+
+fun main(): int {
+  foo(1, 2)
+}

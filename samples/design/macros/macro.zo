@@ -1,7 +1,14 @@
 pub macro foo ()
 macro foo ()
 macro foo (
-  () {}
+  () {
+    -- do some stuff
+  }
+)
+macro foo (
+  (@literal:lit, @body:block) {
+    -- do some stuff
+  }
 )
 
 pub macro bar {}
@@ -9,11 +16,23 @@ macro bar {}
 macro bar {
   () {}
 }
+macro bar {
+  (@body:block) {
+    -- do some stuff
+  }
+}
 
 pub macro foobar []
 macro foobar []
 macro foobar [
-  () {}
+  () {
+    -- do some stuff
+  }
+]
+macro foobar [
+  (@expression:expr) {
+    -- do some stuff
+  }
 ]
 
 fun main() {}

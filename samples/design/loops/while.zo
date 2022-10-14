@@ -1,3 +1,6 @@
+-- run the condition while is `true` and then stop once
+-- that condition returns `false`
+
 fun main(): int {
   mut x: int = 0;
   while x < 3 -> x += 3;

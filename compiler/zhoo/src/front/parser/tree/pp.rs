@@ -125,13 +125,19 @@ impl fmt::Display for MacroDecl {
 
 impl fmt::Display for MacroDeclDef {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", Sep(&self.trees, "\n"))
+    let macro_decl_defs = Sep(&self.macro_decl_defs, "\n");
+
+    match &self.kind {
+      MacroDeclDefKind::Parenthesis => write!(f, "(\n{}\n)", macro_decl_defs),
+      MacroDeclDefKind::Braces => write!(f, "{{\n{}\n}}", macro_decl_defs),
+      MacroDeclDefKind::Brackets => write!(f, "[\n{}\n]", macro_decl_defs),
+    }
   }
 }
 
 impl fmt::Display for MacroCall {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "#{}{}", self.pattern, self.tree)
+    write!(f, "#{}{}", self.pattern, self.macro_decl_def)
   }
 }
 

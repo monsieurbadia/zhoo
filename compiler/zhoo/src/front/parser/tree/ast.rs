@@ -148,32 +148,48 @@ impl MacroDecl {
 
 #[derive(Clone, Debug)]
 pub struct MacroDeclDef {
-  pub trees: Vec<PBox<MacroDeclDef>>,
+  pub kind: MacroDeclDefKind,
+  pub macro_decl_defs: Vec<PBox<MacroDeclDef>>,
   pub span: Span,
 }
 
 impl MacroDeclDef {
-  pub const fn new(trees: Vec<PBox<MacroDeclDef>>, span: Span) -> Self {
-    Self { trees, span }
+  pub const fn new(
+    kind: MacroDeclDefKind,
+    macro_decl_defs: Vec<PBox<MacroDeclDef>>,
+    span: Span,
+  ) -> Self {
+    Self {
+      kind,
+      macro_decl_defs,
+      span,
+    }
   }
+}
+
+#[derive(Clone, Debug)]
+pub enum MacroDeclDefKind {
+  Parenthesis,
+  Braces,
+  Brackets,
 }
 
 #[derive(Clone, Debug)]
 pub struct MacroCall {
   pub pattern: Pattern,
-  pub tree: PBox<MacroDeclDef>,
+  pub macro_decl_def: PBox<MacroDeclDef>,
   pub span: Span,
 }
 
 impl MacroCall {
   pub const fn new(
     pattern: Pattern,
-    tree: PBox<MacroDeclDef>,
+    macro_decl_def: PBox<MacroDeclDef>,
     span: Span,
   ) -> Self {
     Self {
       pattern,
-      tree,
+      macro_decl_def,
       span,
     }
   }

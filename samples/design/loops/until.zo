@@ -1,9 +1,12 @@
+-- run the condition until is `false` and then stop once 
+-- that condition returns `true`
+
 fun main() {
   mut x := 0;
 
-  until x < 3 {
-    x += 1;
+  until x > 3 {
+    x -= 1;
   }
 
-  until x < 3 -> x += 1;
+  until x > 3 -> x -= 1;
 }

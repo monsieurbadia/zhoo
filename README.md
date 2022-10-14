@@ -96,11 +96,61 @@ source --> | parser | -- ast --> | analyzer | -- ast --> | codegen | --> exe
 
 the compiler generates two files: `main.o` and `main` in the `./program` directory. the `main` file is an executable which will be run by the command: `cargo run -- run`.
 
+### development
+
+first, you need to clone the repo:
+
+```
+git clone https://github.com/monsieurbadia/zhoo.git
+```
+
+second, try to compile a simple program:
+
+```
+cargo run -- compile --input samples/sample.zo
+```
+
+the ouput must looks like that:
+
+```
+compiling the program
+
+╭
+│ [make] dir: `program`
+⋮ [make] obj: `program/main.o`
+│ [make] exe: `program/main`
+╰
+
+✨ compile `<program-name>` successfully
+```
+
+check that you have the those files:
+  - `target/debug/libzhoo_core.a`
+  - `program/main.o`
+  - `program/main`
+
+then:
+
+```
+cargo run -- run
+```
+
+your output should looks like this:   
+
+```
+running the program
+
+hello, hello! 👽
+```
+
+👋 welcome to the zhoo gang   
+🥳 *we are proud to have you as a member*   
+
 ## contribution
 
 contributions are welcome. know that there are no small contributions, so don't hesitate. i look forward to working with you.
 
-if you have any questions, feel free to join the `zhoo` galaxy [discord](https://discord.gg/5dBTWgvb).
+if you have any questions, feel free to join the `zhoo` gang [discord](https://discord.gg/5dBTWgvb).
 
 ## license
 

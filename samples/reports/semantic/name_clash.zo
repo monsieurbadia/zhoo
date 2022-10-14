@@ -1,0 +1,4 @@
+fun main() {
+  imu x: int = 1;
+  imu x: int = 2;
+}

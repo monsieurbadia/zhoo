@@ -2,24 +2,26 @@ use super::generate::{write_generate_report, GenerateKind};
 use super::semantic::{write_semantic_report, SemanticKind};
 use super::syntax::{write_syntax_report, SyntaxKind};
 
+use crate::util::color::Color;
 use crate::util::source::SourceMap;
 use crate::util::span::Span;
-
-use ariadne::ReportBuilder;
 
 use std::cell::Cell;
 use std::default::Default;
 use std::path::{Path, PathBuf};
-use std::{io, process};
+use std::{fmt, io, process};
 
-type Kind = ariadne::ReportKind;
+static EXIT_FAILURE: i32 = 1;
+
+pub static REPORT_ERROR: &str = "error";
+pub static REPORT_WARNING: &str = "warning";
+
+type Kind = ReportKind;
 type Labels = Vec<(Span, String, ariadne::Color)>;
 type Notes = Vec<String>;
 type Helps = Vec<String>;
 
 pub type ReportMessage = (Kind, String, Labels, Notes, Helps);
-
-static EXIT_FAILURE: i32 = 1;
 
 pub enum Report {
   Io(io::Error),
@@ -28,13 +30,38 @@ pub enum Report {
   Generate(GenerateKind),
 }
 
+impl fmt::Display for Report {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}", format!("{:03}", self.as_code()))
+  }
+}
+
 impl Report {
   fn as_code(&self) -> i32 {
     match self {
-      Self::Io(_) => 0, // this case will never be used
+      // this case will never be used because in io case we just panic
+      Self::Io(_) => 0,
       Self::Syntax(_) => 1,
       Self::Semantic(_) => 2,
       Self::Generate(_) => 3,
+    }
+  }
+}
+
+pub enum ReportKind {
+  Error(&'static str),
+  Warning(&'static str),
+}
+
+impl From<ReportKind> for ariadne::ReportKind {
+  fn from(kind: ReportKind) -> Self {
+    match kind {
+      ReportKind::Error(title) => {
+        ariadne::ReportKind::Custom(title, Color::error())
+      }
+      ReportKind::Warning(title) => {
+        ariadne::ReportKind::Custom(title, Color::warning())
+      }
     }
   }
 }
@@ -73,16 +100,16 @@ impl Reporter {
     let span = labels.first().map(|label| label.0).unwrap_or(Span::ZERO);
     let source_id = self.source(span);
     let code = self.code(source_id);
-    let code = if code.is_empty() { " " } else { code };
+    let code = if code.is_empty() { "\n" } else { code };
     let path = self.path(span);
 
-    let mut report: ReportBuilder<(String, std::ops::Range<usize>)> =
+    let mut report: ariadne::ReportBuilder<(String, std::ops::Range<usize>)> =
       ariadne::Report::build(
-        kind,
+        kind.into(),
         path.display().to_string(),
         span.lo as usize,
       )
-      .with_code(report.as_code())
+      .with_code(report.to_string())
       .with_message(message);
 
     for (x, (span, message, color)) in labels.into_iter().enumerate() {

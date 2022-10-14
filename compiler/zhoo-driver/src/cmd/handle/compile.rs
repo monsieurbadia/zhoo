@@ -1,9 +1,5 @@
 use crate::cmd::settings::compile::Settings;
 use crate::cmd::settings::Backend;
-use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
-
-use zhoo::back::codegen;
-use zhoo::front::{analyzer, parser};
 
 use std::any::Any;
 use std::{process, thread};
@@ -26,6 +22,8 @@ pub struct Compile {
 
 impl Compile {
   pub async fn handle(&self) {
+    use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
+
     let settings = Settings {
       ast: self.ast,
       input: self.input.clone(),
@@ -47,6 +45,9 @@ async fn compile(
 }
 
 fn compiling(settings: Settings) {
+  use zhoo::back::codegen;
+  use zhoo::front::{analyzer, parser};
+
   println!("compiling the program");
 
   let program = parser::parse(settings.input);
@@ -56,6 +57,15 @@ fn compiling(settings: Settings) {
   match codegen.build(settings.ir) {
     Ok(done) => {
       done();
+      // todo: from a config file <project-name> should be dynamic
+      println!("\n✨ compile `<program-name>` successfully\n");
+
+      if settings.ast {
+        println!("{}", program.to_string());
+      }
+
+      // use as a bottom margin
+      println!();
     }
     Err(error) => {
       eprint!("{error}");

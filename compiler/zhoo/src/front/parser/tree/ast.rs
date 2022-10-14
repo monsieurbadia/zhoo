@@ -88,6 +88,8 @@ impl Stmt {
 #[derive(Clone, Debug)]
 pub enum StmtKind {
   Ext(PBox<Ext>),
+  MacroDecl(PBox<MacroDecl>),
+  MacroCall(PBox<MacroCall>),
   TyAlias(PBox<TyAlias>),
   Enum(PBox<Enum>),
   Struct(PBox<Struct>),
@@ -115,6 +117,63 @@ impl Ext {
       public,
       prototype,
       body,
+      span,
+    }
+  }
+}
+
+#[derive(Clone, Debug)]
+pub struct MacroDecl {
+  pub public: Public,
+  pub name: PBox<Expr>,
+  pub tree: PBox<MacroDeclDef>,
+  pub span: Span,
+}
+
+impl MacroDecl {
+  pub const fn new(
+    public: Public,
+    name: PBox<Expr>,
+    tree: PBox<MacroDeclDef>,
+    span: Span,
+  ) -> Self {
+    Self {
+      public,
+      name,
+      tree,
+      span,
+    }
+  }
+}
+
+#[derive(Clone, Debug)]
+pub struct MacroDeclDef {
+  pub trees: Vec<PBox<MacroDeclDef>>,
+  pub span: Span,
+}
+
+impl MacroDeclDef {
+  pub const fn new(trees: Vec<PBox<MacroDeclDef>>, span: Span) -> Self {
+    Self { trees, span }
+  }
+}
+
+#[derive(Clone, Debug)]
+pub struct MacroCall {
+  pub pattern: Pattern,
+  pub tree: PBox<MacroDeclDef>,
+  pub span: Span,
+}
+
+impl MacroCall {
+  pub const fn new(
+    pattern: Pattern,
+    tree: PBox<MacroDeclDef>,
+    span: Span,
+  ) -> Self {
+    Self {
+      pattern,
+      tree,
       span,
     }
   }

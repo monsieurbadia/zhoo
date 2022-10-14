@@ -18,11 +18,8 @@ StmtBind: PBox<Stmt> = {
 Stmt: PBox<Stmt> = {
   StmtVal,
   StmtBlock,
+  StmtMacro,
   StmtView,
-};
-
-StmtView: PBox<Stmt> = {
-  StmtTyAlias,
 };
 
 StmtVal: PBox<Stmt> = {
@@ -40,20 +37,6 @@ StmtBlock: PBox<Stmt> = {
   StmtStruct,
   StmtFun,
   StmtUnit,
-};
-
-StmtTyAlias: PBox<Stmt> = {
-  <lo:@L> <ty_alias:TyAlias> <hi:@R> => pbox(Stmt::new(StmtKind::TyAlias(ty_alias), Span::new(lo, hi)))
-};
-TyAlias: PBox<TyAlias> = {
-  <lo:@L> <public:public> "type" <identifier:Identifier> <kind:TyAliasKind> <hi:@R> => pbox(TyAlias::new(public, identifier, kind, Span::new(lo, hi))),
-};
-TyAliasKind: TyAliasKind = {
-  "=" <ty:Ty> ";" => TyAliasKind::Single(ty),
-  "{" <tys:Comma<TyAliasField>> "}" => TyAliasKind::Group(tys),
-};
-TyAliasField: PBox<TyAliasField> = {
-  <lo:@L> <identifier:Identifier> ":" <ty:Ty> <hi:@R> => pbox(TyAliasField::new(identifier, ty, Span::new(lo, hi))),
 };
 
 StmtEnum: PBox<Stmt> = {
@@ -129,6 +112,137 @@ Mock: PBox<Fun> = {
 };
 Test: PBox<Fun> = {
   <lo:@L> "test" <prototype:Prototype> <block:Block> <hi:@R> => pbox(Fun::new(Public::No, Async::No, Unsafe::No, Wasm::No, prototype, block, Span::new(lo, hi))),
+};
+
+StmtMacro: PBox<Stmt> = {
+  <lo:@L> <macro_decl:MacroDecl> <hi:@R> => pbox(Stmt::new(StmtKind::MacroDecl(macro_decl), Span::new(lo, hi))),
+  <lo:@L> <macro_call:MacroCall> <hi:@R> => pbox(Stmt::new(StmtKind::MacroCall(macro_call), Span::new(lo, hi))),
+};
+MacroDecl: PBox<MacroDecl> = {
+  <lo:@L> <public:public> "macro" <identifier:Identifier> <macro_decl_def:macro_decl_parenthesis> <hi:@R> => pbox(MacroDecl::new(public, identifier, macro_decl_def, Span::new(lo, hi))),
+  <lo:@L> <public:public> "macro" <identifier:Identifier> <macro_decl_def:macro_decl_braces> <hi:@R> => pbox(MacroDecl::new(public, identifier, macro_decl_def, Span::new(lo, hi))),
+  <lo:@L> <public:public> "macro" <identifier:Identifier> <macro_decl_def:macro_decl_brackets> <hi:@R> => pbox(MacroDecl::new(public, identifier, macro_decl_def, Span::new(lo, hi))),
+};
+macro_rules: Vec<PBox<MacroDeclDef>> = {
+  <macro_rules:macro_rule*> => macro_rules,
+};
+macro_rule: PBox<MacroDeclDef> = {
+  macro_decl_def,
+  // macro_match,
+};
+macro_decl_def: PBox<MacroDeclDef> = {
+  macro_decl_parenthesis,
+  macro_decl_braces,
+  macro_decl_brackets,
+};
+macro_decl_parenthesis: PBox<MacroDeclDef> = {
+  <lo:@L> "(" <macro_rules:macro_rules> ")" <hi:@R> => pbox(MacroDeclDef::new(macro_rules, Span::new(lo, hi))),
+};
+macro_decl_braces: PBox<MacroDeclDef> = {
+  <lo:@L> "{" <macro_rules:macro_rules> "}" <hi:@R> => pbox(MacroDeclDef::new(macro_rules, Span::new(lo, hi))),
+};
+macro_decl_brackets: PBox<MacroDeclDef> = {
+  <lo:@L> "[" <macro_rules:macro_rules> "]" <hi:@R> => pbox(MacroDeclDef::new(macro_rules, Span::new(lo, hi))),
+};
+macro_match: () = {
+  token_and_delimiters,
+  macro_match,
+  "@" "(" macro_match_item ")" ":" macro_frag_spec,
+  "@" "(" macro_match ")" macro_rep_sep macro_rep_op,
+};
+macro_match_item: () = {
+  identifier_or_keyword,
+  "_",
+};
+token_and_delimiters: () = {
+  token_punctuations,
+  token_delimiters,
+};
+token_punctuations: () = {
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "!",
+  "=",
+  "&",
+  "|",
+  "@",
+};
+token_delimiters: () = {
+  "{",
+  "}",
+  "[",
+  "]",
+  "(",
+  ")",
+};
+token_keywords: () = {
+  "fun",
+  "ext",
+  "val",
+  "imu",
+  "mut",
+  "type",
+  "struct",
+  "pub",
+  "async",
+  "unsafe",
+  "wasm",
+  "unit",
+  "test",
+  "mock",
+  "if",
+  "else",
+  "enum",
+  "behavior",
+  "loop",
+  "while",
+  "until",
+};
+identifier_or_keyword: () = {
+  Identifier,
+  token_keywords,
+};
+macro_frag_spec: () = {
+  "block",
+  "expr",
+  "ident",
+  "lit",
+  "pat",
+  "stmt",
+  "ty",
+};
+macro_rep_sep: () = {
+  token_punctuations,
+  macro_rep_op,
+};
+macro_rep_op: () = {
+  "*",
+  "+",
+  "?",
+};
+MacroCall: PBox<MacroCall> = {
+  <lo:@L> "#" <pattern:Pattern> <trees:macro_decl_def> <hi:@L> => pbox(MacroCall::new(pattern, trees, Span::new(lo, hi))),
+};
+
+StmtView: PBox<Stmt> = {
+  StmtTyAlias,
+};
+
+StmtTyAlias: PBox<Stmt> = {
+  <lo:@L> <ty_alias:TyAlias> <hi:@R> => pbox(Stmt::new(StmtKind::TyAlias(ty_alias), Span::new(lo, hi)))
+};
+TyAlias: PBox<TyAlias> = {
+  <lo:@L> <public:public> "type" <identifier:Identifier> <kind:TyAliasKind> <hi:@R> => pbox(TyAlias::new(public, identifier, kind, Span::new(lo, hi))),
+};
+TyAliasKind: TyAliasKind = {
+  "=" <ty:Ty> ";" => TyAliasKind::Single(ty),
+  "{" <tys:Comma<TyAliasField>> "}" => TyAliasKind::Group(tys),
+};
+TyAliasField: PBox<TyAliasField> = {
+  <lo:@L> <identifier:Identifier> ":" <ty:Ty> <hi:@R> => pbox(TyAliasField::new(identifier, ty, Span::new(lo, hi))),
 };
 
 ExprImu: PBox<Expr> = {

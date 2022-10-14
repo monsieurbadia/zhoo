@@ -95,6 +95,8 @@ impl fmt::Display for StmtKind {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Ext(ext) => write!(f, "{ext}"),
+      Self::MacroDecl(macro_decl) => write!(f, "{macro_decl}"),
+      Self::MacroCall(macro_call) => write!(f, "{macro_call}"),
       Self::TyAlias(alias) => write!(f, "{alias}"),
       Self::Enum(enum_def) => write!(f, "{enum_def}"),
       Self::Struct(struct_def) => write!(f, "{struct_def}"),
@@ -112,6 +114,24 @@ impl fmt::Display for Ext {
     let Some(body) = &self.body else { return write!(f, ";"); };
 
     write!(f, " {}", body)
+  }
+}
+
+impl fmt::Display for MacroDecl {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{} macro {} {}", self.public, self.name, self.tree)
+  }
+}
+
+impl fmt::Display for MacroDeclDef {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}", Sep(&self.trees, "\n"))
+  }
+}
+
+impl fmt::Display for MacroCall {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "#{}{}", self.pattern, self.tree)
   }
 }
 

@@ -11,10 +11,10 @@ use std::default::Default;
 use std::path::{Path, PathBuf};
 use std::{fmt, io, process};
 
-static EXIT_FAILURE: i32 = 1;
+const EXIT_FAILURE: i32 = 1;
 
-pub static REPORT_ERROR: &str = "error";
-pub static REPORT_WARNING: &str = "warning";
+pub const REPORT_ERROR: &str = "error";
+pub const REPORT_WARNING: &str = "warning";
 
 type Kind = ReportKind;
 type Labels = Vec<(Span, String, ariadne::Color)>;

@@ -6,9 +6,9 @@ use inflector::string::singularize;
 
 use std::fmt;
 
-static PASCAL_CASE: &str = "pascal case";
-static SNAKE_CASE: &str = "snake case";
-static SNAKE_SCREAMING_CASE: &str = "screaming snake case";
+const PASCAL_CASE: &str = "pascal case";
+const SNAKE_CASE: &str = "snake case";
+const SNAKE_SCREAMING_CASE: &str = "screaming snake case";
 
 pub enum StrCase {
   Pascal,

@@ -1,2 +1,4 @@
 -- struct init
 struct Foo;
+
+fun main() {}

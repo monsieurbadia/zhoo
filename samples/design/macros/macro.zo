@@ -15,3 +15,5 @@ macro foobar []
 macro foobar [
   () {}
 ]
+
+fun main() {}

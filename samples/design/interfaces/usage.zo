@@ -12,3 +12,5 @@ impl ToSpan for Span {
     Span::new(me.start, me.end)
   }
 }
+
+fun main() {}

@@ -6,3 +6,5 @@ fun bar(x: real) {}
 fun foobar(x: real, y: real): real {
   x * y
 }
+
+fun main() {}

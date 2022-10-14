@@ -1,2 +1,4 @@
 -- struct tuple
 struct Foo(int, int);
+
+fun main() {}

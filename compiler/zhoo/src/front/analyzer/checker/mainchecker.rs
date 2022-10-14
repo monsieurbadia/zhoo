@@ -18,7 +18,10 @@ pub fn check(program: &Program) -> Result<()> {
 
     context.program.reporter.add_report(Report::Semantic(
       SemanticKind::MainNotFound(
-        context.program.span,
+        Span::new(
+          context.program.span.hi as usize,
+          context.program.span.hi as usize,
+        ),
         entry_point.display().to_string(),
       ),
     ));

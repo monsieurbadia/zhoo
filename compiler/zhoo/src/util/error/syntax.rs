@@ -24,12 +24,16 @@ pub fn write_syntax_report(kind: &SyntaxKind) -> ReportMessage {
   use ariadne::Fmt;
 
   match kind {
-    SyntaxKind::InvalidToken(_span) => (
+    SyntaxKind::InvalidToken(span) => (
       ariadne::ReportKind::Error,
-      format!("{}", "invalid token".fg(Color::title())),
-      vec![],
-      vec![],
-      vec![]
+      format!("{}", "invalid character".fg(Color::title())),
+      vec![(
+        *span,
+        format!("{}", "this character does not ring a bell".fg(Color::error())),
+        Color::error(),
+      )],
+      vec![format!("{}", "🤖 what language are you trying to speak to me in? i only speak zhoo".fg(Color::hint()))],
+      vec![format!("{}", "👉 please go read the doc: <doc-link>")]
     ),
     SyntaxKind::UnrecognizedEOF(_span, _eof) => (
       ariadne::ReportKind::Error,

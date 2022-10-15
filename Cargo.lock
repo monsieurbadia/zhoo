@@ -511,6 +511,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "329c933548736bc49fd575ee68c89e8be4d260064184389a5b77517cddd99ffb"
 
 [[package]]
+name = "loaders"
+version = "0.0.0"
+dependencies = [
+ "flume",
+ "lazy_static",
+ "pollster",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -706,6 +715,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "qute"
+version = "0.0.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78ef64b43424255705852017d29d392bc437da3fa52352e051d72821fc254bb1"
+
+[[package]]
 name = "redox_syscall"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -789,6 +804,12 @@ name = "slice-group-by"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "03b634d87b960ab1a38c4fe143b508576f075e7c978bfad18217645ebfdfa2ec"
+
+[[package]]
+name = "slowprint"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7bffb85ac53f4b3f5be1636dc5f1306606805bb96995382d260fb4031e6e0d81"
 
 [[package]]
 name = "smallvec"
@@ -1063,7 +1084,9 @@ dependencies = [
  "cranelift-preopt",
  "lalrpop",
  "lalrpop-util",
+ "lazy_static",
  "regex",
+ "slowprint",
 ]
 
 [[package]]
@@ -1076,6 +1099,9 @@ version = "0.0.0"
 dependencies = [
  "clap",
  "flume",
+ "lazy_static",
+ "loaders",
  "pollster",
+ "qute",
  "zhoo",
 ]

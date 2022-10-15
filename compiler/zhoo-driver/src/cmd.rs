@@ -1,4 +1,4 @@
-mod handle;
+mod handler;
 mod settings;
 
 use clap::{Parser, Subcommand};
@@ -13,8 +13,8 @@ pub struct Cmd {
 
 #[derive(Subcommand)]
 pub enum Command {
-  Compile(handle::Compile),
-  Run(handle::Run),
+  Compile(handler::Compile),
+  Run(handler::Run),
 }
 
 impl Cmd {

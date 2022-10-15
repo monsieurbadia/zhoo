@@ -32,7 +32,7 @@ pub enum Report {
 
 impl fmt::Display for Report {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", format!("{:03}", self.as_code()))
+    write!(f, "{}", format_args!("{:03}", self.as_code()))
   }
 }
 

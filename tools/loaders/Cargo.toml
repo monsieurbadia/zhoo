@@ -1,0 +1,9 @@
+[package]
+edition = "2021"
+name = "loaders"
+version = "0.0.0"
+
+[dependencies]
+flume = "0.10.14"
+lazy_static = "1.4.0"
+pollster = "0.2.5"

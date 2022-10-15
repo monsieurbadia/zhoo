@@ -14,5 +14,8 @@ doctest = false
 [dependencies]
 clap = {version = "4.0.10", features = ["derive"]}
 flume = "0.10.14"
+lazy_static = "1.4.0"
+loaders = {path = "../../tools/loaders"}
 pollster = "0.2.5"
+qute = "0.0.13"
 zhoo = {path = "../zhoo"}

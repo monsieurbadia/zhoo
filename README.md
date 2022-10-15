@@ -68,6 +68,16 @@ bring your program to the web will be super simple. add the `wasm` keyword et vo
 
 `zhoo` offers nice error messages, the reports are clear and rich to help the programmer understand what is wrong with the program. the graphical aspect of the errors allows people with disabilities *(e.g. colour blind)* not to lose visibility. the `zhoo` compiler is your best buddy and your first choice ally.
 
+for example, this program:
+
+```
+fun main(x: int): int {
+  imu x: int = 2;
+}
+```
+
+will raise the following error messages:
+
 <p align="center">
   <img src="./misc/overview/zhoo-report-errors.png" />
 </p>
@@ -113,7 +123,9 @@ cargo run -- compile --input samples/sample.zo
 the ouput must looks like that:
 
 ```
-compiling the program
+ℹ compiling `project-name` `version`
+ℹ      done `mode` | `backend`
+⚡       in `time` seconds
 
 ╭
 │ [make] dir: `program`
@@ -121,7 +133,7 @@ compiling the program
 │ [make] exe: `program/main`
 ╰
 
-✨ compile `<program-name>` successfully
+✨ compile `program-name` successfully
 ```
 
 check that you have the those files:

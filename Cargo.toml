@@ -3,6 +3,7 @@ members = [
   "compiler/zhoo",
   "compiler/zhoo-driver",
   "library/core",
+  "tools/loaders",
 ]
 
 [workspace.package]

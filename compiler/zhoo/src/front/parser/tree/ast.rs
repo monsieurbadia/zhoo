@@ -3,6 +3,10 @@ use crate::front::parser::tree::ty::{AsTy, Ty};
 use crate::util::error::Reporter;
 use crate::util::span::{Span, Spanned};
 
+// this is used only to avoid the clippy error `very complex type used`
+pub type PatternWithTyOrInfer = (Pattern, Option<PBox<Ty>>, PBox<Expr>);
+pub type TyOrInfer = (Option<PBox<Ty>>, PBox<Expr>);
+
 #[derive(Clone, Debug)]
 pub enum Public {
   Yes(Span),

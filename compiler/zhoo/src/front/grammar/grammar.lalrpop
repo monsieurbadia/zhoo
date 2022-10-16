@@ -24,7 +24,7 @@ Stmt: PBox<Stmt> = {
 };
 
 StmtVals: PBox<Stmt> = {
-  <lo:@L> "val" <nodes:Sep<pattern_with_type_or_infer, "and">> ";" <hi:@R> => {
+  <lo:@L> "val" <nodes:Sep<pattern_with_ty_or_infer, "and">> ";" <hi:@R> => {
     let mut decls = vec![];
 
     for node in nodes {
@@ -34,15 +34,15 @@ StmtVals: PBox<Stmt> = {
     pbox(Stmt::new(StmtKind::Vals(decls), Span::new(lo, hi)))
   }
 };
-pattern_with_type_or_infer: (Pattern, Option<PBox<Ty>>, PBox<Expr>) = {
-  <pattern:Pattern> <type_or_infer:type_or_infer> => (pattern, type_or_infer.0, type_or_infer.1),
+pattern_with_ty_or_infer: PatternWithTyOrInfer = {
+  <pattern:Pattern> <ty_or_infer:ty_or_infer> => (pattern, ty_or_infer.0, ty_or_infer.1),
 };
 StmtVal: PBox<Stmt> = {
   <lo:@L> <val:DeclForStmt> <hi:@R> => pbox(Stmt::new(StmtKind::Val(val), Span::new(lo, hi))),
 };
 DeclForStmt: PBox<Decl> = {
-  <lo:@L> "val" <pattern:Pattern> <type_or_infer:type_or_infer> <hi:@R> => pbox(
-    Decl::new(Mutability::No, DeclKind::Val, pattern, type_or_infer.0, type_or_infer.1, Span::new(lo, hi))
+  <lo:@L> "val" <pattern:Pattern> <ty_or_infer:ty_or_infer> <hi:@R> => pbox(
+    Decl::new(Mutability::No, DeclKind::Val, pattern, ty_or_infer.0, ty_or_infer.1, Span::new(lo, hi))
   ),
 };
 
@@ -321,7 +321,7 @@ TyAliasField: PBox<TyAliasField> = {
 };
 
 // ExprDecls: PBox<Expr> = {
-//   <lo:@L> "imu" <nodes:Sep<pattern_with_type_or_infer, "and">> ";" <hi:@R> => {
+//   <lo:@L> "imu" <nodes:Sep<pattern_with_ty_or_infer, "and">> ";" <hi:@R> => {
 //     let mut decls = vec![];
 // 
 //     for node in nodes {
@@ -330,7 +330,7 @@ TyAliasField: PBox<TyAliasField> = {
 // 
 //     pbox(Expr::new(ExprKind::Decls(decls), Span::new(lo, hi)))
 //   },
-//   <lo:@L> "mut" <nodes:Sep<pattern_with_type_or_infer, "and">> ";" <hi:@R> => {
+//   <lo:@L> "mut" <nodes:Sep<pattern_with_ty_or_infer, "and">> ";" <hi:@R> => {
 //     let mut decls = vec![];
 // 
 //     for node in nodes {
@@ -344,14 +344,14 @@ ExprDecl: PBox<Expr> = {
   <lo:@L> <decl:DeclForExpr> <hi:@R> => pbox(Expr::new(ExprKind::Decl(decl), Span::new(lo, hi))),
 };
 DeclForExpr: PBox<Decl> = {
-  <lo:@L> "imu" <pattern:Pattern> <type_or_infer:type_or_infer> <hi:@R> => pbox(
-    Decl::new(Mutability::No, DeclKind::Imu, pattern, type_or_infer.0, type_or_infer.1, Span::new(lo, hi))
+  <lo:@L> "imu" <pattern:Pattern> <ty_or_infer:ty_or_infer> <hi:@R> => pbox(
+    Decl::new(Mutability::No, DeclKind::Imu, pattern, ty_or_infer.0, ty_or_infer.1, Span::new(lo, hi))
   ),
-  <lo:@L> "mut" <pattern:Pattern> <type_or_infer:type_or_infer> <hi:@R> => pbox(
-    Decl::new(Mutability::Yes(Span::ZERO), DeclKind::Mut, pattern, type_or_infer.0, type_or_infer.1, Span::new(lo, hi))
+  <lo:@L> "mut" <pattern:Pattern> <ty_or_infer:ty_or_infer> <hi:@R> => pbox(
+    Decl::new(Mutability::Yes(Span::ZERO), DeclKind::Mut, pattern, ty_or_infer.0, ty_or_infer.1, Span::new(lo, hi))
   ),
 };
-type_or_infer: (Option<PBox<Ty>>, PBox<Expr>) = {
+ty_or_infer: TyOrInfer = {
   ":" <ty:Ty> "=" <expr:Expr> => (Some(ty), expr),
   ":=" <expr:Expr> => (None, expr),
 };

@@ -129,7 +129,7 @@ async fn compiling(settings: Settings) {
     }
     Err(error) => {
       spinner.stop();
-      eprint!("{error}\n");
+      eprintln!("{error}");
       eprintln!("🤖 i couldn't compile `project-name`\n"); // todo #2
     }
   }

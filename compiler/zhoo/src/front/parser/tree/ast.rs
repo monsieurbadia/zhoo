@@ -29,7 +29,13 @@ pub enum Wasm {
 
 #[derive(Clone, Debug)]
 pub enum Mutability {
-  Yes,
+  Yes(Span),
+  No,
+}
+
+#[derive(Clone, Debug)]
+pub enum Value {
+  Yes(Span),
   No,
 }
 
@@ -50,6 +56,7 @@ pub enum PatternKind {
   Underscore,
   Identifier(PBox<Expr>),
   Lit(PBox<Expr>),
+  MeLower,
 }
 
 #[derive(Debug)]
@@ -91,9 +98,12 @@ pub enum StmtKind {
   MacroDecl(PBox<MacroDecl>),
   MacroCall(PBox<MacroCall>),
   TyAlias(PBox<TyAlias>),
+  Behavior(PBox<Behavior>),
   Enum(PBox<Enum>),
   Struct(PBox<Struct>),
+  Apply(PBox<Apply>),
   Val(PBox<Decl>),
+  Vals(Vec<PBox<Decl>>), // tmp
   Fun(PBox<Fun>),
   Unit(PBox<Unit>),
 }
@@ -239,6 +249,33 @@ impl TyAliasField {
 }
 
 #[derive(Clone, Debug)]
+pub struct Behavior {
+  pub identifier: Pattern,
+  pub elements: Vec<PBox<BehaviorElement>>,
+  pub span: Span,
+}
+
+impl Behavior {
+  pub const fn new(
+    identifier: Pattern,
+    elements: Vec<PBox<BehaviorElement>>,
+    span: Span,
+  ) -> Self {
+    Self {
+      identifier,
+      elements,
+      span,
+    }
+  }
+}
+
+#[derive(Clone, Debug)]
+pub enum BehaviorElement {
+  Fun(PBox<Fun>),
+  TyAlias(PBox<TyAlias>),
+}
+
+#[derive(Clone, Debug)]
 pub struct Enum {
   pub public: Public,
   pub name: PBox<Expr>,
@@ -360,6 +397,39 @@ impl StructTupleField {
 }
 
 #[derive(Clone, Debug)]
+pub struct Apply {
+  pub unsafeness: Unsafe,
+  pub kind: ApplyKind,
+  pub elements: Vec<PBox<ImplElement>>,
+}
+
+impl Apply {
+  pub const fn new(
+    unsafeness: Unsafe,
+    kind: ApplyKind,
+    elements: Vec<PBox<ImplElement>>,
+  ) -> Self {
+    Self {
+      unsafeness,
+      kind,
+      elements,
+    }
+  }
+}
+
+#[derive(Clone, Debug)]
+pub enum ApplyKind {
+  Behavior(Option<PBox<Behavior>>),
+  Ty(PBox<Ty>),
+}
+
+#[derive(Clone, Debug)]
+pub enum ImplElement {
+  Fun(PBox<Fun>),
+  TyAlias(PBox<TyAlias>),
+}
+
+#[derive(Clone, Debug)]
 pub struct Decl {
   pub mutability: Mutability,
   pub kind: DeclKind,
@@ -394,6 +464,7 @@ pub enum DeclKind {
   Val,
   Imu,
   Mut,
+  Decls(Vec<PBox<Decl>>),
 }
 
 #[derive(Clone, Debug)]
@@ -553,6 +624,7 @@ impl Expr {
 pub enum ExprKind {
   Stmt(PBox<Stmt>),
   Decl(PBox<Decl>),
+  Decls(Vec<PBox<Decl>>), // tmp
   Lit(PBox<Lit>),
   Identifier(String),
   UnOp(UnOp, PBox<Expr>),

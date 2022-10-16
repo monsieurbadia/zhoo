@@ -57,7 +57,7 @@ impl fmt::Display for Wasm {
 impl fmt::Display for Mutability {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
-      Self::Yes => write!(f, "mut"),
+      Self::Yes(_) => write!(f, "mut"),
       Self::No => write!(f, ""),
     }
   }
@@ -75,6 +75,7 @@ impl fmt::Display for PatternKind {
       Self::Underscore => write!(f, "_"),
       Self::Identifier(name) => write!(f, "{name}"),
       Self::Lit(lit) => write!(f, "{lit}"),
+      Self::MeLower => write!(f, "me"),
     }
   }
 }
@@ -97,10 +98,13 @@ impl fmt::Display for StmtKind {
       Self::Ext(ext) => write!(f, "{ext}"),
       Self::MacroDecl(macro_decl) => write!(f, "{macro_decl}"),
       Self::MacroCall(macro_call) => write!(f, "{macro_call}"),
+      Self::Behavior(behavior) => write!(f, "{behavior}"),
       Self::TyAlias(alias) => write!(f, "{alias}"),
       Self::Enum(enum_def) => write!(f, "{enum_def}"),
       Self::Struct(struct_def) => write!(f, "{struct_def}"),
+      Self::Apply(impl_def) => write!(f, "{impl_def}"),
       Self::Val(decl) => write!(f, "{decl}"),
+      Self::Vals(_decls) => todo!(),
       Self::Fun(fun) => write!(f, "{fun}"),
       Self::Unit(unit) => write!(f, "{unit}"),
     }
@@ -138,6 +142,12 @@ impl fmt::Display for MacroDeclDef {
 impl fmt::Display for MacroCall {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "#{}{}", self.pattern, self.macro_decl_def)
+  }
+}
+
+impl fmt::Display for Behavior {
+  fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+    todo!()
   }
 }
 
@@ -219,6 +229,12 @@ impl fmt::Display for StructDeclField {
 impl fmt::Display for StructTupleField {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{} {}", self.public, self.ty)
+  }
+}
+
+impl fmt::Display for Apply {
+  fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+    todo!()
   }
 }
 
@@ -336,6 +352,7 @@ impl fmt::Display for ExprKind {
     match self {
       Self::Stmt(stmt) => write!(f, "{stmt}"),
       Self::Decl(decl) => write!(f, "{decl}"),
+      Self::Decls(_decl) => todo!(),
       Self::Lit(lit) => write!(f, "{lit}"),
       Self::Identifier(identifier) => write!(f, "{identifier}"),
       Self::Call(callee, args) => write!(f, "{callee}({})", Sep(args, ", ")),

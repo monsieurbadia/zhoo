@@ -1,8 +1,8 @@
-val x: str = "你好!";
-val y: str = "foo\n";
-val z: str = "\"bar\"";
-val s: str = x ++ y ++ z;
+val AB: str = "你好!";
+val CD: str = "foo\n";
+val EF: str = "\"bar\"";
+val GH: str = AB ++ CD ++ EF;
 
 fun main() {
-  println(s);
+  println(GH);
 }

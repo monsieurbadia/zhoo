@@ -15,11 +15,11 @@ fn println(ptr: *const i8) {
 }
 
 #[no_mangle]
-fn print_int(num: isize) {
+fn printi(num: isize) {
   print!("{num}");
 }
 
 #[no_mangle]
-fn println_int(num: isize) {
+fn printiln(num: isize) {
   println!("{num}");
 }

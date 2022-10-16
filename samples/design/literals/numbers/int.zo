@@ -1,6 +1,6 @@
-val bin: int = 0b11110000;  -- binary
-val oct: int = 0o77;       -- octal
-val hex: int = 0xfff_fff;   -- hexadecimal
-val dec: int = 1;           -- decimal
+val BIN: int = 0b11110000;  -- binary
+val OCT: int = 0o77;       -- octal
+val HEX: int = 0xfff_fff;   -- hexadecimal
+val DEC: int = 1;           -- decimal
 
 fun main() {}

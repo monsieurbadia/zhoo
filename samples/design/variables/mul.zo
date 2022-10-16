@@ -1,6 +1,12 @@
--- multiples
-val x y z: int = 1;
+val A: int = 1
+  and B: int = 2
+  and C: int = 3;
+
+val X := 1.0
+  and Y := 2.0
+  and Z := 3.0;
 
 fun main() {
-  x + y + z
+  imu bar: int = A + B + C;
+  imu foo: real = X + Y + Z;
 }

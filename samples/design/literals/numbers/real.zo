@@ -1,5 +1,5 @@
-val x: real = 0.0;
-val y: real = 1.0E+77;
-val z: real = 1e4;
+val AB: real = 0.0;
+val CD: real = 1.0E+77;
+val EF: real = 1e4;
 
 fun main() {}

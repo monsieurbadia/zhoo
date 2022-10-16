@@ -7,4 +7,8 @@ fun foobar(x: real, y: real): real {
   x * y
 }
 
+fun barfoo(x: real, y: real): real {
+  return x * y;
+}
+
 fun main() {}

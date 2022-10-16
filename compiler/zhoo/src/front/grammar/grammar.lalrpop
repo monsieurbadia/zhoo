@@ -17,26 +17,51 @@ StmtBind: PBox<Stmt> = {
 
 Stmt: PBox<Stmt> = {
   StmtVal,
+  StmtVals,
   StmtBlock,
   StmtMacro,
   StmtView,
 };
 
-StmtVal: PBox<Stmt> = {
-  <lo:@L> "val" <decl:ValDecl> ";" <hi:@R> => pbox(
-    Stmt::new(StmtKind::Val(decl), Span::new(lo, hi))
-  ),
+StmtVals: PBox<Stmt> = {
+  <lo:@L> "val" <nodes:Sep<pattern_with_type_or_infer, "and">> ";" <hi:@R> => {
+    let mut decls = vec![];
+
+    for node in nodes {
+      decls.push(pbox(Decl::new(Mutability::No, DeclKind::Val, node.0, node.1, node.2, Span::new(lo, hi))))
+    }
+
+    pbox(Stmt::new(StmtKind::Vals(decls), Span::new(lo, hi)))
+  }
 };
-ValDecl: PBox<Decl> = {
-  <lo:@L> <pattern:Pattern> ":" <ty:Ty> "=" <expr:Expr> <hi:@R> => pbox(Decl::new(Mutability::No, DeclKind::Val, pattern, Some(ty), expr, Span::new(lo, hi))),
-  <lo:@L> <pattern:Pattern> ":=" <expr:Expr> <hi:@R> => pbox(Decl::new(Mutability::No, DeclKind::Val, pattern, None, expr, Span::new(lo, hi))),
+pattern_with_type_or_infer: (Pattern, Option<PBox<Ty>>, PBox<Expr>) = {
+  <pattern:Pattern> <type_or_infer:type_or_infer> => (pattern, type_or_infer.0, type_or_infer.1),
+};
+StmtVal: PBox<Stmt> = {
+  <lo:@L> <val:DeclForStmt> <hi:@R> => pbox(Stmt::new(StmtKind::Val(val), Span::new(lo, hi))),
+};
+DeclForStmt: PBox<Decl> = {
+  <lo:@L> "val" <pattern:Pattern> <type_or_infer:type_or_infer> <hi:@R> => pbox(
+    Decl::new(Mutability::No, DeclKind::Val, pattern, type_or_infer.0, type_or_infer.1, Span::new(lo, hi))
+  ),
 };
 
 StmtBlock: PBox<Stmt> = {
+  StmtBehavior,
   StmtEnum,
   StmtStruct,
   StmtFun,
   StmtUnit,
+};
+
+StmtBehavior: PBox<Stmt> = {
+  <lo:@L> <behavior:Behavior> <hi:@R> => pbox(Stmt::new(StmtKind::Behavior(behavior), Span::new(lo, hi))),
+};
+Behavior: PBox<Behavior> = {
+  <lo:@L> "behavior" <pattern:Pattern> "{" <elements:BehaviorElement*> "}" <hi:@R> => pbox(Behavior::new(pattern, elements, Span::new(lo, hi))),
+};
+BehaviorElement: PBox<BehaviorElement> = {
+  <lo:@L> <fun:Fun> <hi:@R> => pbox(BehaviorElement::Fun(fun)),
 };
 
 StmtEnum: PBox<Stmt> = {
@@ -82,11 +107,25 @@ StructTupleField: PBox<StructTupleField> = {
   <lo:@L> <public:public> <ty:Ty> <hi:@R> => pbox(StructTupleField::new(public, ty, Span::new(lo, hi))),
 };
 
+Apply: PBox<Apply> = {
+  <lo:@L> <unsafeness:unsafeness> "impl" <kind:ApplyKind> "{" <impl_elements:ImplElement*> "}" <hi:@R> => pbox(
+    Apply::new(unsafeness, kind, impl_elements)
+  ),
+};
+ApplyKind: ApplyKind = {
+  <ty:TyPrim> => ApplyKind::Ty(ty),
+  <behavior:Behavior?> => ApplyKind::Behavior(behavior),
+};
+ImplElement: PBox<ImplElement> = {
+  <fun:Fun> => pbox(ImplElement::Fun(fun)),
+  <ty_alias:TyAlias> => pbox(ImplElement::TyAlias(ty_alias)),
+};
+
 StmtFun: PBox<Stmt> = {
   <lo:@L> <fun:Fun> <hi:@R> => pbox(Stmt::new(StmtKind::Fun(fun), Span::new(lo, hi))),
 };
 Fun: PBox<Fun> = {
-  <lo:@L> <public:public> <asyncness:asyncness> <unsafeness:unsafeness> <wasm:wasm> "fun" <prototype:Prototype> <block:Block> <hi:@R> => pbox(
+  <lo:@L> <public:public> <asyncness:asyncness> <unsafeness:unsafeness> <wasm:wasm> "fun" <prototype:Prototype> <block:BlockOrSemi> <hi:@R> => pbox(
     Fun::new(public, asyncness, unsafeness, wasm, prototype, block, Span::new(lo, hi))
   ),
 };
@@ -99,6 +138,10 @@ Arg: PBox<Arg> = {
 ReturnTy: ReturnTy = {
   ":" <ty:Ty> => ReturnTy::Ty(ty),
   <lo:@L> () <hi:@R> => ReturnTy::Default(Span::new(lo, hi)),
+};
+BlockOrSemi: PBox<Block> = {
+  Block,
+  <lo:@L> ";" <hi:@R> => pbox(Block::new(vec![], Span::new(lo, hi))),
 };
 
 StmtUnit: PBox<Stmt> = {
@@ -267,38 +310,50 @@ StmtTyAlias: PBox<Stmt> = {
   <lo:@L> <ty_alias:TyAlias> <hi:@R> => pbox(Stmt::new(StmtKind::TyAlias(ty_alias), Span::new(lo, hi)))
 };
 TyAlias: PBox<TyAlias> = {
-  <lo:@L> <public:public> "type" <identifier:Identifier> <kind:TyAliasKind> <hi:@R> => pbox(TyAlias::new(public, identifier, kind, Span::new(lo, hi))),
+  <lo:@L> <public:public> "type" <identifier:Identifier> "=" <kind:TyAliasKind> ";" <hi:@R> => pbox(TyAlias::new(public, identifier, kind, Span::new(lo, hi))),
 };
 TyAliasKind: TyAliasKind = {
-  "=" <ty:Ty> ";" => TyAliasKind::Single(ty),
-  "{" <tys:Comma<TyAliasField>> "}" => TyAliasKind::Group(tys),
+  <ty:Ty> => TyAliasKind::Single(ty),
+  <tys:Comma<TyAliasField>> => TyAliasKind::Group(tys),
 };
 TyAliasField: PBox<TyAliasField> = {
-  <lo:@L> <identifier:Identifier> ":" <ty:Ty> <hi:@R> => pbox(TyAliasField::new(identifier, ty, Span::new(lo, hi))),
+  <lo:@L> "and" <identifier:Identifier> ":" <ty:Ty> <hi:@R> => pbox(TyAliasField::new(identifier, ty, Span::new(lo, hi))),
 };
 
-ExprImu: PBox<Expr> = {
-  <lo:@L> <decl:Imu> <hi:@R> => pbox(Expr::new(ExprKind::Decl(decl), Span::new(lo, hi))),
+// ExprDecls: PBox<Expr> = {
+//   <lo:@L> "imu" <nodes:Sep<pattern_with_type_or_infer, "and">> ";" <hi:@R> => {
+//     let mut decls = vec![];
+// 
+//     for node in nodes {
+//       decls.push(pbox(Decl::new(Mutability::No, DeclKind::Imu, node.0, node.1, node.2, Span::new(lo, hi))))
+//     }
+// 
+//     pbox(Expr::new(ExprKind::Decls(decls), Span::new(lo, hi)))
+//   },
+//   <lo:@L> "mut" <nodes:Sep<pattern_with_type_or_infer, "and">> ";" <hi:@R> => {
+//     let mut decls = vec![];
+// 
+//     for node in nodes {
+//       decls.push(pbox(Decl::new(Mutability::Yes(Span::ZERO), DeclKind::Mut, node.0, node.1, node.2, Span::new(lo, hi))))
+//     }
+// 
+//     pbox(Expr::new(ExprKind::Decls(decls), Span::new(lo, hi)))
+//   }
+// };
+ExprDecl: PBox<Expr> = {
+  <lo:@L> <decl:DeclForExpr> <hi:@R> => pbox(Expr::new(ExprKind::Decl(decl), Span::new(lo, hi))),
 };
-Imu: PBox<Decl> = {
-  <lo:@L> "imu" <pattern:Pattern> ":" <ty:Ty> "=" <expr:Expr> <hi:@R> => pbox(
-    Decl::new(Mutability::No, DeclKind::Imu, pattern, Some(ty), expr, Span::new(lo, hi))
+DeclForExpr: PBox<Decl> = {
+  <lo:@L> "imu" <pattern:Pattern> <type_or_infer:type_or_infer> <hi:@R> => pbox(
+    Decl::new(Mutability::No, DeclKind::Imu, pattern, type_or_infer.0, type_or_infer.1, Span::new(lo, hi))
   ),
-  <lo:@L> "imu" <pattern:Pattern> ":=" <expr:Expr> <hi:@R> => pbox(
-    Decl::new(Mutability::No, DeclKind::Imu, pattern, None, expr, Span::new(lo, hi))
+  <lo:@L> "mut" <pattern:Pattern> <type_or_infer:type_or_infer> <hi:@R> => pbox(
+    Decl::new(Mutability::Yes(Span::ZERO), DeclKind::Mut, pattern, type_or_infer.0, type_or_infer.1, Span::new(lo, hi))
   ),
 };
-
-ExprMut: PBox<Expr> = {
-  <lo:@L> <decl:Mut> <hi:@R> => pbox(Expr::new(ExprKind::Decl(decl), Span::new(lo, hi))),
-};
-Mut: PBox<Decl> = {
-  <lo:@L> "mut" <pattern:Pattern> ":" <ty:Ty> "=" <expr:Expr> <hi:@R> => pbox(
-    Decl::new(Mutability::Yes, DeclKind::Mut, pattern, Some(ty), expr, Span::new(lo, hi))
-  ),
-  <lo:@L> "mut" <pattern:Pattern> ":=" <expr:Expr> <hi:@R> => pbox(
-    Decl::new(Mutability::Yes, DeclKind::Mut, pattern, None, expr, Span::new(lo, hi))
-  ),
+type_or_infer: (Option<PBox<Ty>>, PBox<Expr>) = {
+  ":" <ty:Ty> "=" <expr:Expr> => (Some(ty), expr),
+  ":=" <expr:Expr> => (None, expr),
 };
 
 Ty: PBox<Ty> = {
@@ -335,15 +390,14 @@ ExprIntermediary: PBox<Expr> = {
 };
 
 ExprStmtNoSemi: PBox<Expr> = {
-  ExprStmt,
   ExprIf,
   ExprLoop,
   ExprWhile,
 };
 
 Expr: PBox<Expr> = {
-  ExprImu,
-  ExprMut,
+  ExprDecl,
+  // ExprDecls,
   ExprOr,
   ExprAssign,
   ExprWhen,
@@ -369,9 +423,9 @@ BlockOrExprArrow: PBox<Block> = {
   ),
 };
 
-ExprStmt: PBox<Expr> = {
-  <lo:@L> <stmt:Stmt> <hi:@R>  => pbox(Expr::new(ExprKind::Stmt(stmt), Span::new(lo, hi)))
-};
+// ExprStmt: PBox<Expr> = {
+//   <lo:@L> <stmt:Stmt> <hi:@R>  => pbox(Expr::new(ExprKind::Stmt(stmt), Span::new(lo, hi)))
+// };
 
 ExprControl: PBox<Expr> = {
   <lo:@L> "return" <expr:Expr?> <hi:@R> => pbox(Expr::new(ExprKind::Return(expr), Span::new(lo, hi))),
@@ -573,10 +627,13 @@ Path<Sep>: PBox<Expr> = {
 };
 
 Pattern: Pattern = {
-  <lo:@L> "_" <hi:@R> => Pattern::new(PatternKind::Underscore, Span::new(lo, hi)),
+  Underscore,
   <lo:@L> <lit:Literal> <hi:@R> => Pattern::new(PatternKind::Lit(lit), Span::new(lo, hi)),
   <lo:@L> <identifier:Identifier> <hi:@R> => Pattern::new(PatternKind::Identifier(identifier), Span::new(lo, hi)),
+  <lo:@L> "me" <hi:@R> => Pattern::new(PatternKind::MeLower, Span::new(lo, hi)),
 };
+
+Underscore: Pattern = <lo:@L> "_" <hi:@R> => Pattern::new(PatternKind::Underscore, Span::new(lo, hi));
 
 Identifier: PBox<Expr> = {
   <lo:@L> <identifier:Id> <hi:@R> => pbox(Expr::new(ExprKind::Identifier(identifier), Span::new(lo, hi))),
@@ -637,6 +694,11 @@ unsafeness: Unsafe = {
 wasm: Wasm = {
   <lo:@L> "wasm" <hi:@R> => Wasm::Yes(Span::new(lo, hi)),
   () => Wasm::No,
+};
+
+mutability: Mutability = {
+  <lo:@L> "mut" <hi:@R> => Mutability::Yes(Span::new(lo, hi)),
+  () => Mutability::No,
 };
 
 #[inline]

@@ -1,0 +1,7 @@
+fun main() {
+  imu { x, y, z } = Foo {
+    x = 1,
+    y = 2,
+    z = 3,
+  };
+}

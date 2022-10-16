@@ -1,10 +1,9 @@
-type Status {
-  success: int,
-  failure: int,
-}
+type Foo = str
+  and Bar = real
+  and Xyz = int;
 
 fun main() {
-  let status: Status = Status { success: 0, failure: 1 };
-
-  status.success
+  imu x: Foo = "";
+  imu y: Bar = 0.0;
+  imu z: Xyz = 0;
 }

@@ -146,12 +146,12 @@ impl<'a> Codegen<'a> {
     let mut vars = HashMap::new();
 
     for (i, input) in params.iter().enumerate() {
-      let val = builder.block_params(entry_block)[i];
+      let value = builder.block_params(entry_block)[i];
 
       let variable =
         self
           .variable_builder
-          .create_var(&mut builder, val, types::I64);
+          .create_var(&mut builder, value, types::I64);
 
       vars.insert(input.pattern.to_string(), variable);
     }

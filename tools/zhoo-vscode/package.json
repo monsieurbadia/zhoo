@@ -1,0 +1,24 @@
+{
+	"name": "zhoo-vscode",
+	"displayName": "zhoo-vscode",
+	"description": "zhoo programming language support",
+	"version": "0.0.0",
+	"engines": {
+		"vscode": "^1.71.0"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"contributes": {
+		"languages": [{
+			"id": "zhoo",
+			"extensions": [".zo"],
+			"configuration": "./language-configuration.json"
+		}],
+		"grammars": [{
+			"language": "zhoo",
+			"scopeName": "source.zhoo",
+			"path": "./syntaxes/zhoo.tmLanguage.json"
+		}]
+	}
+}

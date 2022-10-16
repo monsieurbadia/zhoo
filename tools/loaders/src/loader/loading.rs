@@ -78,7 +78,11 @@ impl Loading {
       pollster::block_on(async move {
         let mut frame = Frame::new(spinner);
 
-        while sender.send(Message::WithFrame(frame.next().await)).is_ok() {
+        while sender
+          .send_async(Message::WithFrame(frame.next().await))
+          .await
+          .is_ok()
+        {
           thread::sleep(Duration::from_millis(INTERVAL));
         }
       });
@@ -141,7 +145,8 @@ async fn send_with_error<T: Into<String>>(
   content: T,
 ) {
   sender
-    .send(Message::Next(Icon::Error, content.into()))
+    .send_async(Message::Next(Icon::Error, content.into()))
+    .await
     .expect("event to have been sent")
 }
 
@@ -151,13 +156,15 @@ async fn send_with_icon<T: Into<String>>(
   content: T,
 ) {
   sender
-    .send(Message::Next(Icon::Custom(icon.into()), content.into()))
+    .send_async(Message::Next(Icon::Custom(icon.into()), content.into()))
+    .await
     .expect("event to have been sent")
 }
 
 async fn send_with_info<T: Into<String>>(sender: &Sender<Message>, content: T) {
   sender
-    .send(Message::Next(Icon::Info, content.into()))
+    .send_async(Message::Next(Icon::Info, content.into()))
+    .await
     .expect("event to have been sent")
 }
 
@@ -166,19 +173,22 @@ async fn send_with_success<T: Into<String>>(
   content: T,
 ) {
   sender
-    .send(Message::Next(Icon::Success, content.into()))
+    .send_async(Message::Next(Icon::Success, content.into()))
+    .await
     .expect("event to have been sent")
 }
 
 async fn send_with_text<T: Into<String>>(sender: &Sender<Message>, content: T) {
   sender
-    .send(Message::WithText(content.into()))
+    .send_async(Message::WithText(content.into()))
+    .await
     .expect("event to have been sent");
 }
 
 async fn send_with_time<T: Into<String>>(sender: &Sender<Message>, content: T) {
   sender
-    .send(Message::Next(Icon::Time, content.into()))
+    .send_async(Message::Next(Icon::Time, content.into()))
+    .await
     .expect("event to have been sent")
 }
 
@@ -187,11 +197,16 @@ async fn send_with_warning<T: Into<String>>(
   content: T,
 ) {
   sender
-    .send(Message::Next(Icon::Warning, content.into()))
+    .send_async(Message::Next(Icon::Warning, content.into()))
+    .await
     .expect("event to have been sent")
 }
 
 async fn send_stop(sender: &Sender<Message>) {
-  sender.send(Message::Stop).expect("event to have been sent");
+  sender
+    .send_async(Message::Stop)
+    .await
+    .expect("event to have been sent");
+
   thread::sleep(Duration::from_millis(INTERVAL));
 }

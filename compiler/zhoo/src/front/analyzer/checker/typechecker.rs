@@ -110,7 +110,7 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
     }
     ExprKind::Array(elements) => check_expr_array(context, expr.span, elements),
     ExprKind::Index(indexed, index) => {
-      check_expr_index(context, indexed, index)
+      check_expr_index(context, expr.span, indexed, index)
     }
     _ => panic!("tmp error for `check:expr`"), // fixme #1
   }
@@ -512,11 +512,21 @@ fn check_expr_array(
 }
 
 fn check_expr_index(
-  _context: &mut Context,
-  _indexed: &Expr,
-  _index: &Expr,
+  context: &mut Context,
+  span: Span,
+  indexed: &Expr,
+  index: &Expr,
 ) -> PBox<Ty> {
-  Ty::INT.into()
+  let indexed = check_expr(context, indexed);
+  let index = check_expr(context, index);
+
+  if index.kind != Ty::BOOL.kind {
+    context.program.reporter.add_report(Report::Semantic(
+      SemanticKind::InvalidIndex(index.span, index.kind.to_string()),
+    ));
+  }
+
+  Ty::with_index(indexed, index, span).into()
 }
 
 fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {

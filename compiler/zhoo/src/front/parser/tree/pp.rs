@@ -478,6 +478,7 @@ impl fmt::Display for TyKind {
 
         write!(f, "[{size}]")
       }
+      Self::Index(indexed, index) => write!(f, "{indexed}[{index}]"),
       Self::Tuple(tys) => write!(f, "({})", Sep(tys, ", ")),
     }
   }

@@ -6,6 +6,7 @@ pub enum SemanticKind {
   ArgumentsMismatch(Span, String, usize, usize, String),
   FunctionNotFound(Span, String),
   IdentifierNotFound(Span, String),
+  InvalidIndex(Span, String),
   MainNotFound(Span, String),
   MainHasInputs(String, Span),
   NameClash(Span, String),
@@ -65,6 +66,20 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
         Color::error(),
       )],
       vec![format!("🤖 are you sure you have defined it correctly because i'm stumped")],
+      vec![],
+    ),
+    SemanticKind::InvalidIndex(span, ty) => (
+      ReportKind::Error(REPORT_ERROR),
+      format!("{}", "invalid index".fg(Color::title())),
+      vec![(
+        *span,
+        format!(
+          "{}",
+          format_args!("array indices are always of type int, got: {ty}").fg(Color::error()),
+        ),
+        Color::error(),
+      )],
+      vec![],
       vec![],
     ),
     SemanticKind::MainNotFound(span, entry_point) => (

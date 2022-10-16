@@ -58,7 +58,8 @@ a good way to do unit tests with functionality adapted to the comfort of the pro
 
 ## easy webassembly
 
-bring your program to the web will be super simple. add the `wasm` keyword et voilà! but keep in mind that wasm can be use to do some other stuff than web ;)
+bring your program to the web will be super simple. add the `wasm` keyword et voilà!    
+*but keep in mind that wasm can be use to do some other stuff than web ;)*
 
 <p align="center">
   <img src="./misc/overview/zhoo-wasm.png" />
@@ -66,7 +67,7 @@ bring your program to the web will be super simple. add the `wasm` keyword et vo
 
 ## error messages
 
-`zhoo` offers nice error messages, the reports are clear and rich to help the programmer understand what is wrong with the program. the graphical aspect of the errors allows people with disabilities *(e.g. colour blind)* not to lose visibility. the `zhoo` compiler is your best buddy and your first choice ally.
+`zhoo` offers nice error messages, the reports are clear and rich to help the programmer understand what is wrong with the program. the graphical aspect of the errors allows people with disabilities *(e.g. colour blind)* not to lose visibility. the `zhoo` compiler is your [best](http://frankraiser.de/wordpress/the-compiler-is-your-friend) [friend](https://www.youtube.com/watch?v=Tz6OUIjtM6E) and your first choice ally.
 
 for example, this program:
 

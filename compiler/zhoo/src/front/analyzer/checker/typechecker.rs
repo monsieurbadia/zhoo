@@ -108,7 +108,7 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
     ExprKind::Lambda(args, block_or_expr) => {
       check_expr_lambda(context, args, block_or_expr)
     }
-    ExprKind::Array(elements) => check_expr_array(context, elements),
+    ExprKind::Array(elements) => check_expr_array(context, expr.span, elements),
     ExprKind::Index(indexed, index) => {
       check_expr_index(context, indexed, index)
     }
@@ -488,11 +488,27 @@ fn check_expr_lambda(
 }
 
 fn check_expr_array(
-  _context: &mut Context,
+  context: &mut Context,
+  span: Span,
   elements: &[PBox<Expr>],
 ) -> PBox<Ty> {
-  Ty::with_array(Ty::INT.into(), Some(elements.len() as i64), Span::new(0, 0))
-    .into()
+  let element_tys = elements
+    .iter()
+    .map(|element| check_expr(context, element))
+    .collect::<Vec<PBox<Ty>>>();
+
+  if element_tys.is_empty() {
+    return Ty::with_array(Ty::INFER.into(), None, span).into();
+  }
+
+  let mut element_tys = element_tys.into_iter();
+  let first_ty = element_tys.next().unwrap(); // we can unwrap here because we know that we have an element
+
+  while let Some(ty) = element_tys.next() {
+    expect_equality(context, &first_ty, &ty);
+  }
+
+  Ty::with_array(first_ty, Some(elements.len() as i64), span).into()
 }
 
 fn check_expr_index(
@@ -500,7 +516,6 @@ fn check_expr_index(
   _indexed: &Expr,
   _index: &Expr,
 ) -> PBox<Ty> {
-  // tmp
   Ty::INT.into()
 }
 

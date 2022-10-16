@@ -1,3 +1,6 @@
+// the gcc compiler name
+pub const GCC_PROGRAM: &str = "gcc";
+
 // the entry point of the program
 pub const ENTRY_POINT: &str = "main";
 

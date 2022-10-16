@@ -1,6 +1,6 @@
-use super::generate::{write_generate_report, GenerateKind};
-use super::semantic::{write_semantic_report, SemanticKind};
-use super::syntax::{write_syntax_report, SyntaxKind};
+use super::generate::{generate_report, GenerateKind};
+use super::semantic::{semantic_report, SemanticKind};
+use super::syntax::{syntax_report, SyntaxKind};
 
 use crate::util::color::Color;
 use crate::util::source::SourceMap;
@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 use std::{fmt, io, process};
 
 const EXIT_FAILURE: i32 = 1;
+const NEW_LINE: &str = "\n";
 
 pub const REPORT_ERROR: &str = "error";
 pub const REPORT_WARNING: &str = "warning";
@@ -91,30 +92,26 @@ impl Reporter {
 
   pub fn add_report(&self, report: Report) {
     let (kind, message, labels, notes, helps) = match report {
-      Report::Syntax(ref kind) => write_syntax_report(kind),
-      Report::Semantic(ref kind) => write_semantic_report(kind),
-      Report::Generate(ref kind) => write_generate_report(kind),
+      Report::Syntax(ref kind) => syntax_report(kind),
+      Report::Semantic(ref kind) => semantic_report(kind),
+      Report::Generate(ref kind) => generate_report(kind),
       Report::Io(error) => panic!("{error}"),
     };
 
     let span = labels.first().map(|label| label.0).unwrap_or(Span::ZERO);
     let source_id = self.source(span);
     let code = self.code(source_id);
-    let code = if code.is_empty() { "\n" } else { code };
-    let path = self.path(span);
+    let code = if code.is_empty() { NEW_LINE } else { code };
+    let path = self.path(span).display();
 
     let mut report: ariadne::ReportBuilder<(String, std::ops::Range<usize>)> =
-      ariadne::Report::build(
-        kind.into(),
-        path.display().to_string(),
-        span.lo as usize,
-      )
-      .with_code(report.to_string())
-      .with_message(message);
+      ariadne::Report::build(kind.into(), path.to_string(), span.lo as usize)
+        .with_code(report.to_string())
+        .with_message(message);
 
     for (x, (span, message, color)) in labels.into_iter().enumerate() {
       report = report.with_label(
-        ariadne::Label::new((path.display().to_string(), span.into()))
+        ariadne::Label::new((path.to_string(), span.into()))
           .with_message(message)
           .with_order(x as i32)
           .with_color(color),
@@ -133,7 +130,10 @@ impl Reporter {
     report
       .with_config(ariadne::Config::default())
       .finish()
-      .print((path.display().to_string(), ariadne::Source::from(code)))
+      .write(
+        (path.to_string(), ariadne::Source::from(code)),
+        std::io::stderr(),
+      )
       .unwrap();
 
     self.has_errors.set(true);

@@ -1,3 +1,5 @@
+use super::constant::GCC_PROGRAM;
+
 use lazy_static::lazy_static;
 use slowprint::slow_println;
 
@@ -39,13 +41,13 @@ pub fn make_file(path_file: &str, bytes_buf: &[u8]) {
 }
 
 pub fn make_exe(path_input: &str, path_output: &str) {
-  match Command::new("gcc")
+  match Command::new(GCC_PROGRAM)
     .args([path_input, "-o", path_output])
     .output()
   {
     Ok(_) => {
       slow_println("│ [make] exe: `{path_output}`", *INTERVAL_EXE);
-      slow_println("╰", *INTERVAL_ARD);
+      slow_println("╰\n", *INTERVAL_ARD);
     }
     Err(error) => panic!("ERROR: {error}"),
   }
@@ -57,7 +59,7 @@ pub fn make_exe_with_link(
   path_output: &str,
 ) {
   // fixme: `ld: warning: PIE disabled. Absolute addressing (perhaps -mdynamic-no-pic) not allowed in code signed PIE`
-  match Command::new("gcc")
+  match Command::new(GCC_PROGRAM)
     .args([
       "-v",
       "-fno-pie",
@@ -74,7 +76,7 @@ pub fn make_exe_with_link(
   {
     Ok(_) => {
       println!("│ [make] exe: `{path_output}`",);
-      println!("╰");
+      println!("╰\n");
     }
     Err(error) => panic!("ERROR: {error}"),
   }

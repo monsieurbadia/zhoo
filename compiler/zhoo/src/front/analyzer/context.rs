@@ -10,7 +10,7 @@ pub struct Context<'a> {
   pub program: &'a Program,
   pub scope_map: ScopeMap,
   pub return_ty: PBox<Ty>,
-  pub loops: i32,
+  pub loop_depth: i32,
 }
 
 impl<'a> Context<'a> {
@@ -31,7 +31,7 @@ impl<'a> Context<'a> {
       program,
       scope_map,
       return_ty: Ty::VOID.into(),
-      loops: 0,
+      loop_depth: 0,
     }
   }
 }

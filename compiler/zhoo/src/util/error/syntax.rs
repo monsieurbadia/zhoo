@@ -24,7 +24,7 @@ pub enum SyntaxKind {
   User(String),
 }
 
-pub fn write_syntax_report(kind: &SyntaxKind) -> ReportMessage {
+pub fn syntax_report(kind: &SyntaxKind) -> ReportMessage {
   use super::report::{ReportKind, REPORT_ERROR};
 
   use crate::util::color::Color;

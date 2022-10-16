@@ -23,3 +23,13 @@ fn printi(num: isize) {
 fn printiln(num: isize) {
   println!("{num}");
 }
+
+#[no_mangle]
+fn printr(num: f64) {
+  print!("{num}");
+}
+
+#[no_mangle]
+fn printrln(num: f64) {
+  println!("{num}");
+}

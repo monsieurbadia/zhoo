@@ -251,13 +251,12 @@ impl<'a> Codegen<'a> {
     }
   }
 
-  pub fn build(self, output_ir: bool) -> BuildResult {
+  pub async fn build(self, output_ir: bool) -> BuildResult {
     let object = self.module.finish();
     let bytes = object.emit().unwrap();
 
     Ok(Box::new(move || {
       let path_object_file = format!("{PATH_OUTPUT_DIRECTORY}/{ENTRY_POINT}.o");
-
       let path_core_lib = format!("{PATH_LIBRARY}/{PATH_LIBRARY_CORE}");
       let path_exe_file = format!("{PATH_OUTPUT_DIRECTORY}/{ENTRY_POINT}");
 

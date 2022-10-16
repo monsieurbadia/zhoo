@@ -12,7 +12,7 @@ pub struct Source {
 }
 
 impl Source {
-  pub fn new(id: usize, path: PathBuf) -> Self {
+  pub const fn new(id: usize, path: PathBuf) -> Self {
     Self { id, path }
   }
 }

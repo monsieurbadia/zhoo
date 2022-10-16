@@ -14,7 +14,7 @@ pub enum SemanticKind {
   TypeMismatch(Span, String, String),
 }
 
-pub fn write_semantic_report(kind: &SemanticKind) -> ReportMessage {
+pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
   use super::report::{ReportKind, REPORT_ERROR, REPORT_WARNING};
 
   use crate::util::color::Color;

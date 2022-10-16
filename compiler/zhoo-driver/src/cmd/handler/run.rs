@@ -1,5 +1,7 @@
 use std::any::Any;
-use std::{process, thread};
+use std::thread;
+
+use pollster::block_on;
 
 #[derive(clap::Parser)]
 pub struct Run;
@@ -7,6 +9,8 @@ pub struct Run;
 impl Run {
   pub async fn handle(&self) {
     use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
+
+    use std::process;
 
     match run().await {
       Ok(_) => process::exit(EXIT_SUCCESS),
@@ -16,21 +20,23 @@ impl Run {
 }
 
 async fn run() -> Result<(), Box<(dyn Any + Send + 'static)>> {
-  thread::spawn(running).join()
+  thread::spawn(move || block_on(running())).join()
 }
 
-fn running() {
+async fn running() {
   use zhoo::util::constant::{ENTRY_POINT, PATH_OUTPUT_DIRECTORY};
 
   use std::process::Command;
+  use std::str;
 
-  println!("running the program");
+  println!("🤖 running the program");
 
   let program = format!("./{PATH_OUTPUT_DIRECTORY}/{ENTRY_POINT}");
   let output = Command::new(program).output().unwrap();
-  let output = std::str::from_utf8(&output.stdout).unwrap();
+  let output = str::from_utf8(&output.stdout).unwrap();
 
   if !output.is_empty() {
-    println!("\n{}", output);
+    println!();
+    println!("{}", output);
   }
 }

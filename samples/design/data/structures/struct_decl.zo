@@ -4,11 +4,11 @@ struct Foo {
 }
 
 impl Foo {
-  pub fn new(bar: int) -> Me {
+  pub fun new(bar: int): Me {
     Me { bar }
   }
 
-  fn bar(me) -> int {
+  fun bar(me): int {
     me.bar
   }
 }

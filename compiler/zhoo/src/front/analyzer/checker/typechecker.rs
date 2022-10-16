@@ -383,9 +383,9 @@ fn check_expr_block(context: &mut Context, body: &Block) -> PBox<Ty> {
 }
 
 fn check_expr_loop(context: &mut Context, body: &Block) -> PBox<Ty> {
-  context.loops += 1;
+  context.loop_depth += 1;
   check_block(context, body);
-  context.loops -= 1;
+  context.loop_depth -= 1;
 
   Ty::with_void(body.span).into()
 }
@@ -396,9 +396,9 @@ fn check_expr_while(
   body: &Block,
 ) -> PBox<Ty> {
   ensure_expr_ty(context, condition, &Ty::with_bool(condition.span));
-  context.loops += 1;
+  context.loop_depth += 1;
   check_block(context, body);
-  context.loops -= 1;
+  context.loop_depth -= 1;
 
   Ty::with_void(body.span).into()
 }
@@ -408,7 +408,7 @@ fn check_expr_break(
   maybe_expr: &Option<PBox<Expr>>,
   origin: &Expr,
 ) -> PBox<Ty> {
-  if context.loops == 0 {
+  if context.loop_depth == 0 {
     context.program.reporter.add_report(Report::Semantic(
       SemanticKind::OutOfLoop(origin.span, origin.to_string()),
     ));
@@ -426,7 +426,7 @@ fn check_expr_break(
 }
 
 fn check_expr_continue(context: &mut Context, origin: &Expr) -> PBox<Ty> {
-  if context.loops == 0 {
+  if context.loop_depth == 0 {
     context.program.reporter.add_report(Report::Semantic(
       SemanticKind::OutOfLoop(origin.span, origin.to_string()),
     ));

@@ -14,7 +14,7 @@ pub enum GenerateKind {
   ArgumentsMismatch(Span),
 }
 
-pub fn write_generate_report(kind: &GenerateKind) -> ReportMessage {
+pub fn generate_report(kind: &GenerateKind) -> ReportMessage {
   use super::report::{ReportKind, REPORT_ERROR};
 
   use crate::util::color::Color;

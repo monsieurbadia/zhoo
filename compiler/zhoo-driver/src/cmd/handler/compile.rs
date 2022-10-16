@@ -1,25 +1,14 @@
-use crate::cmd::settings::compile::Settings;
-use crate::cmd::settings::Backend;
+use crate::cmd::handler::{
+  COMPILATION_DONE, COMPILATION_IN_PROCESS, COMPILATION_IN_TIME,
+  COMPILATION_START,
+};
 
-use lazy_static::lazy_static;
-use qute::prelude::*;
+use crate::cmd::settings::compile::Settings;
+
+use pollster::block_on;
 
 use std::any::Any;
-use std::{process, thread};
-
-lazy_static! {
-  pub static ref COMPILATION_IN_PROCESS: String =
-    qute!("building").bold().set_color(171).to_string();
-  pub static ref COMPILATION_START: String = qute!("compiling")
-    .bold()
-    .underline()
-    .light_green()
-    .to_string();
-  pub static ref COMPILATION_DONE: String =
-    qute!("done").bold().underline().light_green().to_string();
-  pub static ref COMPILATION_IN_TIME: String =
-    qute!("in").bold().underline().light_green().to_string();
-}
+use std::thread;
 
 #[derive(clap::Parser)]
 pub struct Compile {
@@ -42,7 +31,10 @@ pub struct Compile {
 
 impl Compile {
   pub async fn handle(&self) {
+    use crate::cmd::settings::Backend;
     use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
+
+    use std::process;
 
     let settings = Settings {
       ast: self.ast,
@@ -62,10 +54,10 @@ impl Compile {
 async fn compile(
   settings: Settings,
 ) -> Result<(), Box<(dyn Any + Send + 'static)>> {
-  thread::spawn(move || compiling(settings)).join()
+  thread::spawn(move || block_on(compiling(settings))).join()
 }
 
-fn compiling(settings: Settings) {
+async fn compiling(settings: Settings) {
   use zhoo::back::codegen;
   use zhoo::front::{analyzer, parser};
 
@@ -83,6 +75,12 @@ fn compiling(settings: Settings) {
   // -- todo #2 --
   //
   // values between backticks should be dynamic
+  //
+  // `program-name`: the name of the program from a configuration file
+  // `version`: the version of the program from a configuration file
+  // `mode`: [dev|release]
+  // `backend`: [cranelift|llvm]
+  // `time`: the compilation time in seconds
 
   const INTERVAL: u64 = 500;
 
@@ -90,17 +88,24 @@ fn compiling(settings: Settings) {
 
   spinner.with_text(&*COMPILATION_IN_PROCESS);
 
+  // used as a margin top
   println!();
+
   spinner
     .with_info(format!("{} `project-name` `version`", &*COMPILATION_START)); // todo #2
 
   thread::sleep(Duration::from_millis(INTERVAL)); // todo #1
 
+  // -- front --
+
   let program = parser::parse(settings.input);
   let _ = analyzer::analyze(&program);
+
+  // -- back --
+
   let codegen = codegen::cranelift::aot::generate(&program);
 
-  match codegen.build(settings.ir) {
+  match codegen.build(settings.ir).await {
     Ok(done) => {
       spinner
         .with_info(format!("     {} `mode` | `backend`", &*COMPILATION_DONE)); // todo #2
@@ -113,19 +118,19 @@ fn compiling(settings: Settings) {
       thread::sleep(Duration::from_millis(INTERVAL)); // todo #1
       spinner.stop();
       done();
-      println!("\n✨ compile `program-name` successfully\n"); // todo #2
+      println!("🤖 compile `program-name` successfully\n"); // todo #2
 
       if settings.ast {
         println!("{}", program);
       }
 
-      // use as a bottom margin
+      // use as a margin bottom
       println!();
     }
     Err(error) => {
       spinner.stop();
-      eprint!("{error}");
-      eprintln!("💥 i couldn't compile `project-name`\n");
+      eprint!("{error}\n");
+      eprintln!("🤖 i couldn't compile `project-name`\n"); // todo #2
     }
   }
 }

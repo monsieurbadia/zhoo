@@ -58,7 +58,7 @@ a good way to do unit tests with functionality adapted to the comfort of the pro
 
 ## easy webassembly
 
-bring your program to the web will be super simple. add the `wasm` keyword et voilà!
+bring your program to the web will be super simple. add the `wasm` keyword et voilà! but keep in mind that wasm can be use to do some other stuff than web ;)
 
 <p align="center">
   <img src="./misc/overview/zhoo-wasm.png" />
@@ -70,11 +70,9 @@ bring your program to the web will be super simple. add the `wasm` keyword et vo
 
 for example, this program:
 
-```
-fun main(x: int): int {
-  imu x: int = 2;
-}
-```
+    fun main(x: int): int {
+      imu x: int = 2;
+    }
 
 will raise the following error messages:
 
@@ -86,11 +84,9 @@ will raise the following error messages:
 
 for the moment the proof of concept has only three phases:
 
-```
-           |--------|            |----------|            |---------|
-source --> | parser | -- ast --> | analyzer | -- ast --> | codegen | --> exe
-           |--------|            |----------|            |---------|
-```
+               |--------|            |----------|            |---------|
+    source --> | parser | -- ast --> | analyzer | -- ast --> | codegen | --> exe
+               |--------|            |----------|            |---------|
 
 ## start
 
@@ -110,31 +106,25 @@ the compiler generates two files: `main.o` and `main` in the `./program` directo
 
 first, you need to clone the repo:
 
-```
-git clone https://github.com/monsieurbadia/zhoo.git
-```
+    git clone https://github.com/monsieurbadia/zhoo.git
 
 second, try to compile a simple program:
 
-```
-cargo run -- compile --input samples/sample.zo
-```
+    cargo run -- compile --input samples/code/hello/hello.zo
 
 the ouput must looks like that:
 
-```
-ℹ compiling `project-name` `version`
-ℹ      done `mode` | `backend`
-⚡       in `time` seconds
+    ℹ compiling `project-name` `version`
+    ℹ      done `mode` | `backend`
+    ⚡       in `time` seconds
 
-╭
-│ [make] dir: `program`
-⋮ [make] obj: `program/main.o`
-│ [make] exe: `program/main`
-╰
+    ╭
+    │ [make] dir: `program`
+    ⋮ [make] obj: `program/main.o`
+    │ [make] exe: `program/main`
+    ╰
 
-✨ compile `program-name` successfully
-```
+    🤖 compile `program-name` successfully
 
 check that you have the those files:
   - `target/debug/libzhoo_core.a`
@@ -143,17 +133,13 @@ check that you have the those files:
 
 then:
 
-```
-cargo run -- run
-```
+    cargo run -- run
 
 your output should looks like this:   
 
-```
-running the program
+    🤖 running the program
 
-hello, hello! 👽
-```
+    hello, hello! 👽
 
 👋 welcome to the zhoo gang   
 🥳 *we are proud to have you as a member*   

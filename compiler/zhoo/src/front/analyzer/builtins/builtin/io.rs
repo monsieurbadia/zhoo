@@ -13,12 +13,20 @@ pub fn io_builtins() -> Vec<Builtin> {
       Proto(vec![Ty::STR.into()], Ty::VOID.into()),
     ),
     Builtin::new(
-      String::from("print_int"),
+      String::from("printi"),
       Proto(vec![Ty::INT.into()], Ty::VOID.into()),
     ),
     Builtin::new(
-      String::from("println_int"),
+      String::from("printiln"),
       Proto(vec![Ty::INT.into()], Ty::VOID.into()),
+    ),
+    Builtin::new(
+      String::from("printr"),
+      Proto(vec![Ty::REAL.into()], Ty::VOID.into()),
+    ),
+    Builtin::new(
+      String::from("printrln"),
+      Proto(vec![Ty::REAL.into()], Ty::VOID.into()),
     ),
   ]
 }

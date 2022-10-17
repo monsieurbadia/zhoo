@@ -504,7 +504,7 @@ fn check_expr_array(
   let mut element_tys = element_tys.into_iter();
   let first_ty = element_tys.next().unwrap(); // we can unwrap here because we know that we have an element
 
-  while let Some(ty) = element_tys.next() {
+  for ty in element_tys {
     expect_equality(context, &first_ty, &ty);
   }
 

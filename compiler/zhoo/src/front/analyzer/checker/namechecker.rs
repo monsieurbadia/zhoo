@@ -10,6 +10,7 @@ use crate::util::span::Span;
 use crate::util::strcase;
 use crate::util::strcase::StrCase;
 
+#[inline]
 pub fn check(program: &Program) -> Result<()> {
   let context = Context::new(program);
 

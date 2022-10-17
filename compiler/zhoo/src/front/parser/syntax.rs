@@ -10,6 +10,7 @@ use std::path::PathBuf;
 const IDENTIFIER_REGEX: &str = "r#\"[_a-zA-Z][_a-zA-Z0-9]*\"#";
 const IDENTIFIER_NAME: &str = "`identifier`";
 
+#[inline]
 pub fn parse<P: Into<PathBuf>>(pathname: P) -> Program {
   use std::fmt::Write;
 

@@ -2,7 +2,7 @@ use crate::front::analyzer::context::Context;
 
 use crate::front::parser::tree::ast::{
   BinOp, BinOpKind, Block, Decl, Expr, ExprKind, Fun, Lit, LitKind,
-  PatternKind, Program, Prototype, Stmt, StmtKind, UnOp, UnOpKind,
+  PatternKind, Program, Prototype, Stmt, StmtKind, Struct, UnOp, UnOpKind,
 };
 
 use crate::front::parser::tree::ty::{AsTy, Ty};
@@ -15,6 +15,7 @@ use crate::util::span::Span;
 // too many raise, i should rather use the result type to return an error.
 // errors will be stored in a vector
 
+#[inline]
 pub fn check(program: &Program) -> Result<()> {
   let mut context = Context::new(program);
 
@@ -78,6 +79,7 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
   match &expr.kind {
     ExprKind::Stmt(stmt) => check_expr_stmt(context, stmt),
     ExprKind::Decl(decl) => check_expr_decl(context, decl),
+    ExprKind::Decls(decls) => check_expr_decls(context, decls),
     ExprKind::Lit(lit) => check_expr_lit(lit),
     ExprKind::Identifier(identifier) => {
       check_expr_identifier(context, expr.span, identifier)
@@ -97,8 +99,12 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
     ExprKind::While(condition, body) => {
       check_expr_while(context, condition, body)
     }
+    ExprKind::Until(condition, body) => {
+      check_expr_until(context, condition, body)
+    }
     ExprKind::Break(maybe_expr) => check_expr_break(context, maybe_expr, expr),
     ExprKind::Continue => check_expr_continue(context, expr),
+    ExprKind::Raise(maybe_expr) => check_expr_raise(context, maybe_expr),
     ExprKind::When(condition, consequence, alternative) => {
       check_expr_when(context, condition, consequence, alternative)
     }
@@ -109,10 +115,17 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
       check_expr_lambda(context, args, block_or_expr)
     }
     ExprKind::Array(elements) => check_expr_array(context, expr.span, elements),
-    ExprKind::Index(indexed, index) => {
-      check_expr_index(context, expr.span, indexed, index)
+    ExprKind::ArrayAccess(indexed, index) => {
+      check_expr_array_access(context, expr.span, indexed, index)
     }
-    _ => panic!("tmp error for `check:expr`"), // fixme #1
+    ExprKind::Tuple(elements) => check_expr_tuple(context, expr.span, elements),
+    ExprKind::TupleAccess(indexed, index) => {
+      check_expr_tuple_access(context, expr.span, indexed, index)
+    }
+    ExprKind::Struct(struct_def) => check_expr_struct(context, struct_def),
+    ExprKind::StructAccess(indexed, index) => {
+      check_expr_struct_access(context, expr.span, indexed, index)
+    }
   }
 }
 
@@ -123,6 +136,10 @@ fn check_expr_stmt(context: &mut Context, stmt: &Stmt) -> PBox<Ty> {
 
 fn check_expr_decl(context: &mut Context, decl: &Decl) -> PBox<Ty> {
   check_decl(context, decl)
+}
+
+fn check_expr_decls(_context: &mut Context, _decls: &[PBox<Decl>]) -> PBox<Ty> {
+  todo!()
 }
 
 fn check_decl(context: &mut Context, decl: &Decl) -> PBox<Ty> {
@@ -395,6 +412,22 @@ fn check_expr_while(
   condition: &Expr,
   body: &Block,
 ) -> PBox<Ty> {
+  check_expr_while_or_until(context, condition, body)
+}
+
+fn check_expr_until(
+  context: &mut Context,
+  condition: &Expr,
+  body: &Block,
+) -> PBox<Ty> {
+  check_expr_while_or_until(context, condition, body)
+}
+
+fn check_expr_while_or_until(
+  context: &mut Context,
+  condition: &Expr,
+  body: &Block,
+) -> PBox<Ty> {
   ensure_expr_ty(context, condition, &Ty::with_bool(condition.span));
   context.loop_depth += 1;
   check_block(context, body);
@@ -433,6 +466,13 @@ fn check_expr_continue(context: &mut Context, origin: &Expr) -> PBox<Ty> {
   }
 
   Ty::with_void(origin.span).into()
+}
+
+fn check_expr_raise(
+  _context: &mut Context,
+  _maybe_expr: &Option<PBox<Expr>>,
+) -> PBox<Ty> {
+  todo!()
 }
 
 fn check_expr_when(
@@ -511,22 +551,72 @@ fn check_expr_array(
   Ty::with_array(first_ty, Some(elements.len() as i64), span).into()
 }
 
-fn check_expr_index(
+// todo: needs work
+fn check_expr_array_access(
   context: &mut Context,
-  span: Span,
+  _span: Span,
   indexed: &Expr,
   index: &Expr,
 ) -> PBox<Ty> {
-  let indexed = check_expr(context, indexed);
+  let _indexed = check_expr(context, indexed);
   let index = check_expr(context, index);
 
-  if index.kind != Ty::BOOL.kind {
+  if index.kind != Ty::INT.kind {
     context.program.reporter.add_report(Report::Semantic(
       SemanticKind::InvalidIndex(index.span, index.kind.to_string()),
     ));
   }
 
-  Ty::with_index(indexed, index, span).into()
+  index
+}
+
+// todo (?)
+fn check_expr_tuple(
+  context: &mut Context,
+  span: Span,
+  elements: &[PBox<Expr>],
+) -> PBox<Ty> {
+  let element_tys = elements
+    .iter()
+    .map(|element| check_expr(context, element))
+    .collect::<Vec<PBox<Ty>>>();
+
+  Ty::with_tuple(element_tys, span).into()
+}
+
+// todo: needs work
+fn check_expr_tuple_access(
+  context: &mut Context,
+  _span: Span,
+  indexed: &Expr,
+  index: &Expr,
+) -> PBox<Ty> {
+  let _indexed = check_expr(context, indexed);
+  let index = check_expr(context, index);
+
+  if index.kind != Ty::INT.kind {
+    context.program.reporter.add_report(Report::Semantic(
+      SemanticKind::InvalidIndex(index.span, index.kind.to_string()),
+    ));
+  }
+
+  index
+}
+
+fn check_expr_struct(
+  _context: &mut Context,
+  _struct_def: &PBox<Struct>,
+) -> PBox<Ty> {
+  todo!()
+}
+
+fn check_expr_struct_access(
+  _context: &mut Context,
+  _span: Span,
+  _indexed: &Expr,
+  _index: &Expr,
+) -> PBox<Ty> {
+  todo!()
 }
 
 fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {
@@ -554,11 +644,7 @@ fn unify_tys(context: &mut Context, t1: &Ty, t2: &Ty) -> PBox<Ty> {
   if t1.kind != t2.kind {
     // fixme #1
     context.program.reporter.raise(Report::Semantic(
-      SemanticKind::TypeMismatch(
-        Span::merge(&t1.span, &t2.span),
-        t1.to_string(),
-        t2.to_string(),
-      ),
+      SemanticKind::TypeMismatch(t2.span, t1.to_string(), t2.to_string()),
     ));
   }
 

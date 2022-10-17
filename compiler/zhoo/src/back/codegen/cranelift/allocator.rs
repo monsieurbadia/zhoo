@@ -4,6 +4,7 @@ thread_local! {
   static ALLOCATOR_INDEX: RefCell<i64> = RefCell::new(0);
 }
 
+#[inline]
 pub fn alloc(size: usize) -> i64 {
   let index = ALLOCATOR_INDEX.with(|x| *x.borrow());
 

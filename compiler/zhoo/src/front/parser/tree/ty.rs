@@ -45,24 +45,20 @@ impl Ty {
     Self::new(TyKind::Str, span)
   }
 
-  pub const fn with_array(ty: PBox<Ty>, size: Option<i64>, span: Span) -> Self {
-    Self::new(TyKind::Array(ty, size), span)
-  }
-
-  pub const fn with_index(
-    indexed: PBox<Ty>,
-    index: PBox<Ty>,
-    span: Span,
-  ) -> Self {
-    Self::new(TyKind::Index(indexed, index), span)
-  }
-
-  pub const fn with_fn(
+  pub const fn with_lambda(
     args: Vec<PBox<Ty>>,
     return_ty: PBox<Ty>,
     span: Span,
   ) -> Self {
     Self::new(TyKind::Fn(args, return_ty), span)
+  }
+
+  pub const fn with_array(ty: PBox<Ty>, size: Option<i64>, span: Span) -> Self {
+    Self::new(TyKind::Array(ty, size), span)
+  }
+
+  pub const fn with_tuple(elements: Vec<PBox<Ty>>, span: Span) -> Self {
+    Self::new(TyKind::Tuple(elements), span)
   }
 
   pub fn is_numeric(&self) -> bool {
@@ -115,7 +111,6 @@ pub enum TyKind {
   Infer,
   Fn(Vec<PBox<Ty>>, PBox<Ty>),
   Array(PBox<Ty>, Option<i64>),
-  Index(PBox<Ty>, PBox<Ty>),
   Tuple(Vec<PBox<Ty>>),
 }
 
@@ -144,9 +139,6 @@ impl PartialEq for TyKind {
       | (Self::Infer, Self::Infer) => true,
       (Self::Fn(_, lhs), Self::Fn(_, rhs)) => lhs.kind == rhs.kind,
       (Self::Array(lhs, _), Self::Array(rhs, _)) => lhs.kind == rhs.kind,
-      (Self::Index(lhs1, lhs2), Self::Index(rhs1, rhs2)) => {
-        lhs1 == rhs1 && lhs2 == rhs2
-      }
       (Self::Tuple(lhs), Self::Tuple(rhs)) => lhs == rhs,
       _ => false,
     }

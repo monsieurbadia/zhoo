@@ -1,3 +1,4 @@
+-- unsupported
 fun fibonacci(n: int): int {
 	match n {
 		0 => 0,

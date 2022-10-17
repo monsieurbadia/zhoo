@@ -61,37 +61,29 @@ impl DataContextBuilder {
     globals: &mut HashMap<String, GlobalValue>,
     data: &String,
   ) -> Value {
-    let data_id = if let Some(data_id) = globals.get(data) {
-      *data_id
-    } else {
-      match module.declare_data(
-        &format!("_data{}", self.index),
-        Linkage::Local,
-        true,
-        false,
-      ) {
-        Ok(id) => {
-          let mut data_ctx = DataContext::new();
+    let data_id = match globals.get(data) {
+      Some(data_id) => *data_id,
+      None => {
+        let data_name = format!("_data{}", data);
 
-          data_ctx.define(data.as_bytes().to_vec().into_boxed_slice());
-          module.define_data(id, &data_ctx).unwrap();
+        let data_id = module
+          .declare_data(&data_name, Linkage::Local, false, false)
+          .unwrap();
 
-          let data_id = module.declare_data_in_func(id, builder.func);
+        let mut data_context = DataContext::new();
 
-          data_ctx.clear();
-          globals.insert(data.to_string(), data_id);
+        data_context.define(data.as_bytes().to_vec().into_boxed_slice());
+        module.define_data(data_id, &data_context).unwrap();
 
-          self.index += 1;
+        let data_id = module.declare_data_in_func(data_id, builder.func);
 
-          data_id
-        }
-        Err(_err) => {
-          panic!("_data{} already used/declared", self.index)
-        }
+        globals.insert(data.to_string(), data_id);
+
+        data_id
       }
     };
 
-    builder.ins().symbol_value(types::I64, data_id)
+    builder.ins().global_value(types::I64, data_id)
   }
 }
 

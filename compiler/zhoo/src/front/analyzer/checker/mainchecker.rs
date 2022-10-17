@@ -5,6 +5,7 @@ use crate::util::constant::ENTRY_POINT;
 use crate::util::error::{Report, Reporter, Result, SemanticKind};
 use crate::util::span::Span;
 
+#[inline]
 pub fn check(program: &Program) -> Result<()> {
   let context = Context::new(program);
 
@@ -26,6 +27,8 @@ pub fn check(program: &Program) -> Result<()> {
       ),
     ));
   }
+
+  context.program.reporter.abort_if_has_error();
 
   Ok(())
 }

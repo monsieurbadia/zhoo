@@ -1,5 +1,5 @@
 fun main() {
   imu x: real[3] = [1.0, 2.0, 3.0];
 
-  printint(x[0]);
+  printiln(x[0]);
 }

@@ -648,10 +648,11 @@ pub enum ExprKind {
   IfElse(PBox<Expr>, PBox<Expr>, Option<PBox<Expr>>),
   Lambda(Vec<PBox<Expr>>, PBox<Expr>),
   Array(Vec<PBox<Expr>>),
-  Index(PBox<Expr>, PBox<Expr>),
+  ArrayAccess(PBox<Expr>, PBox<Expr>),
   Tuple(Vec<PBox<Expr>>),
   TupleAccess(PBox<Expr>, PBox<Expr>),
-  MemberAccess(PBox<Expr>, PBox<Expr>),
+  Struct(PBox<Struct>),
+  StructAccess(PBox<Expr>, PBox<Expr>),
 }
 
 #[derive(Clone, Debug)]

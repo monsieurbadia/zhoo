@@ -30,7 +30,7 @@ pub struct Translator<'a> {
   pub ty: types::Type,
   pub blocks: &'a mut Vec<CBlock>,
   pub variable_builder: &'a mut VariableBuilder,
-  pub data_ctx_builder: &'a mut DataContextBuilder,
+  pub data_context_builder: &'a mut DataContextBuilder,
 }
 
 impl<'a> Translator<'a> {
@@ -126,8 +126,8 @@ impl<'a> Translator<'a> {
         self.translate_expr_lambda(args, block_or_expr)
       }
       ExprKind::Array(elements) => self.translate_expr_array(elements),
-      ExprKind::Index(indexed, index) => {
-        self.translate_expr_index(indexed, index)
+      ExprKind::ArrayAccess(indexed, index) => {
+        self.translate_expr_array_access(indexed, index)
       }
       _ => todo!("tmp translate:expr => {}", expr),
     }
@@ -163,7 +163,7 @@ impl<'a> Translator<'a> {
   }
 
   fn translate_expr_lit_str(&mut self, data: &String) -> Value {
-    self.data_ctx_builder.create_data(
+    self.data_context_builder.create_data(
       &mut self.builder,
       self.module,
       self.globals,
@@ -262,8 +262,8 @@ impl<'a> Translator<'a> {
       BinOpKind::Ge => self.translate_expr_bin_op_ge(lhs, rhs),
       BinOpKind::Eq => self.translate_expr_bin_op_eq(lhs, rhs),
       BinOpKind::Ne => self.translate_expr_bin_op_ne(lhs, rhs),
-      BinOpKind::Or => self.translate_expr_bin_op_or(lhs, rhs),
-      BinOpKind::And => self.translate_expr_bin_op_and(lhs, rhs),
+      BinOpKind::Or => self.translate_expr_bin_op_or(lhs, op, rhs),
+      BinOpKind::And => self.translate_expr_bin_op_and(lhs, op, rhs),
       BinOpKind::Shl => self.translate_expr_bin_op_shl(lhs, rhs),
       BinOpKind::Shr => self.translate_expr_bin_op_shr(lhs, rhs),
       BinOpKind::BitAnd => self.translate_expr_bin_op_bit_and(lhs, rhs),
@@ -339,12 +339,48 @@ impl<'a> Translator<'a> {
     self.builder.ins().bint(self.ty, boolean)
   }
 
-  fn translate_expr_bin_op_or(&mut self, lhs: Value, rhs: Value) -> Value {
-    self.builder.ins().srem(lhs, rhs)
+  fn translate_expr_bin_op_or(
+    &mut self,
+    lhs: Value,
+    op: &BinOp,
+    rhs: Value,
+  ) -> Value {
+    self.translate_bin_op_logical(lhs, op, rhs)
   }
 
-  fn translate_expr_bin_op_and(&mut self, lhs: Value, rhs: Value) -> Value {
-    self.builder.ins().srem(lhs, rhs)
+  fn translate_expr_bin_op_and(
+    &mut self,
+    lhs: Value,
+    op: &BinOp,
+    rhs: Value,
+  ) -> Value {
+    self.translate_bin_op_logical(lhs, op, rhs)
+  }
+
+  fn translate_bin_op_logical(
+    &mut self,
+    lhs: Value,
+    op: &BinOp,
+    rhs: Value,
+  ) -> Value {
+    let body_block = self.builder.create_block();
+    let merge_block = self.builder.create_block();
+
+    self.builder.append_block_param(merge_block, self.ty);
+
+    match op.node {
+      BinOpKind::And => self.builder.ins().brnz(lhs, body_block, &[]),
+      BinOpKind::Or => self.builder.ins().brz(lhs, body_block, &[]),
+      _ => unreachable!(),
+    };
+
+    self.builder.ins().jump(merge_block, &[lhs]);
+    self.builder.seal_block(body_block);
+    self.builder.switch_to_block(body_block);
+    self.builder.ins().jump(merge_block, &[rhs]);
+    self.builder.seal_block(merge_block);
+    self.builder.switch_to_block(merge_block);
+    self.builder.block_params(merge_block)[0]
   }
 
   fn translate_expr_bin_op_shl(&mut self, lhs: Value, rhs: Value) -> Value {
@@ -649,7 +685,11 @@ impl<'a> Translator<'a> {
     global_value
   }
 
-  fn translate_expr_index(&mut self, indexed: &Expr, index: &Expr) -> Value {
+  fn translate_expr_array_access(
+    &mut self,
+    indexed: &Expr,
+    index: &Expr,
+  ) -> Value {
     let indexed = self.translate_expr(indexed);
     let index = self.translate_expr(index);
     let array_type = self.module.target_config().pointer_type();

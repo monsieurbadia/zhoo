@@ -1,8 +1,7 @@
-fun main(): int {
-  imu x: int = 1;
-  imu y: int = 2;
-
-  println("hello, hello! 👽");
-
-  x + y
+fun main() {
+  mut x: int = 1;
+  while x < 1000 {
+    printiln(x);
+    x += 1;
+  }
 }

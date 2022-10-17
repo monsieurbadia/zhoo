@@ -145,6 +145,20 @@ your output should looks like this:
 👋 welcome to the zhoo gang   
 🥳 *we are proud to have you as a member*   
 
+## issues
+
+something goes wrong when i try to print an `str` expression, for example the code below:
+
+    fun main() {
+      println("foo");
+      println("bar");
+    }
+
+will outputs:
+
+    foobar
+    bar
+
 ## contribution
 
 contributions are welcome. know that there are no small contributions, so don't hesitate. i look forward to working with you.

@@ -53,6 +53,7 @@ pub fn make_exe(path_input: &str, path_output: &str) {
   }
 }
 
+#[cfg(not(target_os = "macos"))]
 pub fn make_exe_with_link(
   path_input: &str,
   path_link: &str,
@@ -67,6 +68,34 @@ pub fn make_exe_with_link(
       "-ldl",
       "-Wl",
       "no-as-needed",
+      path_input,
+      path_link,
+      "-o",
+      path_output,
+    ])
+    .output()
+  {
+    Ok(_) => {
+      println!("│ [make] exe: `{path_output}`",);
+      println!("╰\n");
+    }
+    Err(error) => panic!("ERROR: {error}"),
+  }
+}
+
+#[cfg(target_os = "macos")]
+pub fn make_exe_with_link(
+  path_input: &str,
+  path_link: &str,
+  path_output: &str,
+) {
+  // fixme: `ld: warning: PIE disabled. Absolute addressing (perhaps -mdynamic-no-pic) not allowed in code signed PIE`
+  match Command::new(GCC_PROGRAM)
+    .args([
+      "-v",
+      "-fno-pie",
+      "-pthread",
+      "-ldl",
       path_input,
       path_link,
       "-o",

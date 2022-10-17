@@ -75,7 +75,7 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
         *span,
         format!(
           "{}",
-          format_args!("array indices are always of type int, got: {ty}").fg(Color::error()),
+          format_args!("array indices are always of type `int`, got: `{ty}`").fg(Color::error()),
         ),
         Color::error(),
       )],

@@ -599,9 +599,9 @@ UnOp: UnOp = {
 ExprSuffix: PBox<Expr> = {
   ExprAtom,
   <lo:@L> <callee:ExprSuffix> "(" <args:Comma<Expr>>")" <hi:@R> => pbox(Expr::new(ExprKind::Call(callee, args), Span::new(lo, hi))),
-  <lo:@L> <identifier:ExprSuffix> "." <path:Path<"::">> <hi:@R> => pbox(Expr::new(ExprKind::MemberAccess(identifier, path), Span::new(lo, hi))),
+  <lo:@L> <identifier:ExprSuffix> "." <path:Path<"::">> <hi:@R> => pbox(Expr::new(ExprKind::StructAccess(identifier, path), Span::new(lo, hi))),
   <lo:@L> <identifier:ExprSuffix> "." <int:LiteralInteger> <hi:@R> => pbox(Expr::new(ExprKind::TupleAccess(identifier, int), Span::new(lo, hi))),
-  <lo:@L> <indexed:ExprSuffix> "[" <index:Expr> "]" <hi:@R> => pbox(Expr::new(ExprKind::Index(indexed, index), Span::new(lo, hi))),
+  <lo:@L> <indexed:ExprSuffix> "[" <index:Expr> "]" <hi:@R> => pbox(Expr::new(ExprKind::ArrayAccess(indexed, index), Span::new(lo, hi))),
 };
 
 ExprAtom: PBox<Expr> = {

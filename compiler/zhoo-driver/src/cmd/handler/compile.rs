@@ -39,9 +39,9 @@ impl Compile {
     let settings = Settings {
       ast: self.ast,
       no_motion: self.no_motion,
-      input: format!("{}", self.input),
+      input: self.input.to_string(),
       ir: self.ir,
-      backend: Backend::from(format!("{}", self.backend)),
+      backend: Backend::from(self.backend.to_string()),
     };
 
     match compile(settings).await {

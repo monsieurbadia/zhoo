@@ -394,10 +394,11 @@ impl fmt::Display for ExprKind {
         write!(f, "fn({}) -> {}", Sep(args, ", "), expr)
       }
       Self::Array(exprs) => write!(f, "[{}]", Sep(exprs, ", ")),
-      Self::Index(indexed, index) => write!(f, "{}[{}]", indexed, index),
+      Self::ArrayAccess(indexed, index) => write!(f, "{}[{}]", indexed, index),
       Self::Tuple(exprs) => write!(f, "({})", Sep(exprs, ", ")),
       Self::TupleAccess(tuple, access) => write!(f, "{tuple}.{access}"),
-      Self::MemberAccess(member, access) => write!(f, "{member}.{access}"),
+      Self::Struct(struct_def) => write!(f, "{}", struct_def),
+      Self::StructAccess(member, access) => write!(f, "{member}.{access}"),
     }
   }
 }
@@ -478,7 +479,6 @@ impl fmt::Display for TyKind {
 
         write!(f, "[{size}]")
       }
-      Self::Index(indexed, index) => write!(f, "{indexed}[{index}]"),
       Self::Tuple(tys) => write!(f, "({})", Sep(tys, ", ")),
     }
   }

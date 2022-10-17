@@ -30,6 +30,7 @@ use std::collections::HashMap;
 
 pub type BuildResult = Result<Box<dyn FnOnce()>, String>;
 
+#[inline]
 pub fn generate(program: &Program) -> Codegen {
   Codegen::new(program).generate()
 }
@@ -43,7 +44,7 @@ pub struct Codegen<'a> {
   ir: String,
   funs: HashMap<String, CompiledFunction>,
   globals: HashMap<String, GlobalValue>,
-  data_ctx_builder: DataContextBuilder,
+  data_context_builder: DataContextBuilder,
   variable_builder: VariableBuilder,
 }
 
@@ -81,7 +82,7 @@ impl<'a> Codegen<'a> {
       ir: String::new(),
       funs: HashMap::new(),
       globals: HashMap::new(),
-      data_ctx_builder: DataContextBuilder::default(),
+      data_context_builder: DataContextBuilder::default(),
       variable_builder: VariableBuilder::default(),
     };
 
@@ -169,7 +170,7 @@ impl<'a> Codegen<'a> {
       program: self.program,
       ty: types::I64,
       blocks: &mut self.blocks,
-      data_ctx_builder: &mut self.data_ctx_builder,
+      data_context_builder: &mut self.data_context_builder,
       variable_builder: &mut self.variable_builder,
     };
 

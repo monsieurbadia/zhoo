@@ -281,7 +281,7 @@ impl<'a> Codegen<'a> {
       .0
       .iter()
       .enumerate()
-      .map(|(x, input)| (format!("_input{x}"), input.clone()))
+      .map(|(x, input)| (format!("_input{x}"), input))
       .collect::<Vec<_>>();
 
     for _ in inputs.iter() {

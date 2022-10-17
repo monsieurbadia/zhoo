@@ -18,13 +18,13 @@ impl<'a> Context<'a> {
     let mut scope_map = ScopeMap::default();
 
     for builtin in io_builtins() {
-      let _ = scope_map
-        .set_fun(builtin.name, (builtin.proto.0.clone(), builtin.proto.1));
+      let _ =
+        scope_map.set_fun(builtin.name, (builtin.proto.0, builtin.proto.1));
     }
 
     for builtin in sys_builtins() {
-      let _ = scope_map
-        .set_fun(builtin.name, (builtin.proto.0.clone(), builtin.proto.1));
+      let _ =
+        scope_map.set_fun(builtin.name, (builtin.proto.0, builtin.proto.1));
     }
 
     Self {

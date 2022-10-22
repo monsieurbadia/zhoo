@@ -54,6 +54,7 @@ pub struct Codegen<'a> {
 //  - option level: string
 
 impl<'a> Codegen<'a> {
+  #[inline]
   fn new(program: &'a Program) -> Self {
     let mut flag_builder = settings::builder();
 

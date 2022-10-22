@@ -3,6 +3,7 @@ use std::ops::{Deref, DerefMut};
 
 pub struct PBox<T: ?Sized>(pub Box<T>);
 
+#[inline]
 pub fn pbox<T: 'static>(value: T) -> PBox<T> {
   PBox(Box::new(value))
 }

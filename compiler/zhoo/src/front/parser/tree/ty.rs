@@ -21,30 +21,37 @@ impl Ty {
   pub const STR: Self = Self::new(TyKind::Str, Span::ZERO);
   pub const INFER: Self = Self::new(TyKind::Infer, Span::ZERO);
 
+  #[inline]
   pub const fn new(kind: TyKind, span: Span) -> Self {
     Self { kind, span }
   }
 
+  #[inline]
   pub const fn with_void(span: Span) -> Self {
     Self::new(TyKind::Void, span)
   }
 
+  #[inline]
   pub const fn with_bool(span: Span) -> Self {
     Self::new(TyKind::Bool, span)
   }
 
+  #[inline]
   pub const fn with_int(span: Span) -> Self {
     Self::new(TyKind::Int, span)
   }
 
+  #[inline]
   pub const fn with_real(span: Span) -> Self {
     Self::new(TyKind::Real, span)
   }
 
+  #[inline]
   pub const fn with_str(span: Span) -> Self {
     Self::new(TyKind::Str, span)
   }
 
+  #[inline]
   pub const fn with_lambda(
     args: Vec<PBox<Ty>>,
     return_ty: PBox<Ty>,
@@ -53,10 +60,12 @@ impl Ty {
     Self::new(TyKind::Fn(args, return_ty), span)
   }
 
+  #[inline]
   pub const fn with_array(ty: PBox<Ty>, size: Option<i64>, span: Span) -> Self {
     Self::new(TyKind::Array(ty, size), span)
   }
 
+  #[inline]
   pub const fn with_tuple(elements: Vec<PBox<Ty>>, span: Span) -> Self {
     Self::new(TyKind::Tuple(elements), span)
   }

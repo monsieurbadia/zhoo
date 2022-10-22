@@ -15,6 +15,7 @@ pub struct CompiledFunction {
 }
 
 impl CompiledFunction {
+  #[inline]
   pub const fn new(id: FuncId, defined: bool, input_len: usize) -> Self {
     Self {
       id,
@@ -39,10 +40,9 @@ impl VariableBuilder {
     let variable = Variable::with_u32(self.index);
 
     builder.declare_var(variable, ty);
+    builder.def_var(variable, value);
 
     self.index += 1;
-
-    builder.def_var(variable, value);
 
     variable
   }

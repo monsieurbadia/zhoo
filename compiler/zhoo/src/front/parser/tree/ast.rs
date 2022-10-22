@@ -50,6 +50,7 @@ pub struct Pattern {
 }
 
 impl Pattern {
+  #[inline]
   pub const fn new(kind: PatternKind, span: Span) -> Self {
     Self { kind, span }
   }
@@ -71,6 +72,7 @@ pub struct Program {
 }
 
 impl Program {
+  #[inline]
   pub const fn new(
     stmts: Vec<PBox<Stmt>>,
     reporter: Reporter,
@@ -91,6 +93,7 @@ pub struct Stmt {
 }
 
 impl Stmt {
+  #[inline]
   pub const fn new(kind: StmtKind, span: Span) -> Self {
     Self { kind, span }
   }
@@ -121,6 +124,7 @@ pub struct Ext {
 }
 
 impl Ext {
+  #[inline]
   pub const fn new(
     public: Public,
     prototype: Prototype,
@@ -145,6 +149,7 @@ pub struct MacroDecl {
 }
 
 impl MacroDecl {
+  #[inline]
   pub const fn new(
     public: Public,
     name: PBox<Expr>,
@@ -168,6 +173,7 @@ pub struct MacroDeclDef {
 }
 
 impl MacroDeclDef {
+  #[inline]
   pub const fn new(
     kind: MacroDeclDefKind,
     macro_decl_defs: Vec<PBox<MacroDeclDef>>,
@@ -196,6 +202,7 @@ pub struct MacroCall {
 }
 
 impl MacroCall {
+  #[inline]
   pub const fn new(
     pattern: Pattern,
     macro_decl_def: PBox<MacroDeclDef>,
@@ -218,6 +225,7 @@ pub struct TyAlias {
 }
 
 impl TyAlias {
+  #[inline]
   pub const fn new(
     public: Public,
     name: PBox<Expr>,
@@ -247,6 +255,7 @@ pub struct TyAliasField {
 }
 
 impl TyAliasField {
+  #[inline]
   pub const fn new(name: PBox<Expr>, ty: PBox<Ty>, span: Span) -> Self {
     Self { name, ty, span }
   }
@@ -260,6 +269,7 @@ pub struct Behavior {
 }
 
 impl Behavior {
+  #[inline]
   pub const fn new(
     identifier: Pattern,
     elements: Vec<PBox<BehaviorElement>>,
@@ -288,6 +298,7 @@ pub struct Enum {
 }
 
 impl Enum {
+  #[inline]
   pub const fn new(
     public: Public,
     name: PBox<Expr>,
@@ -311,6 +322,7 @@ pub struct EnumVariant {
 }
 
 impl EnumVariant {
+  #[inline]
   pub const fn new(
     name: PBox<Expr>,
     arg: Option<PBox<EnumVariantArg>>,
@@ -327,6 +339,7 @@ pub struct EnumVariantArg {
 }
 
 impl EnumVariantArg {
+  #[inline]
   pub const fn new(value: PBox<Expr>, span: Span) -> Self {
     Self { value, span }
   }
@@ -341,6 +354,7 @@ pub struct Struct {
 }
 
 impl Struct {
+  #[inline]
   pub const fn new(
     public: Public,
     name: PBox<Expr>,
@@ -372,6 +386,7 @@ pub struct StructDeclField {
 }
 
 impl StructDeclField {
+  #[inline]
   pub const fn new(
     public: Public,
     name: PBox<Expr>,
@@ -395,6 +410,7 @@ pub struct StructTupleField {
 }
 
 impl StructTupleField {
+  #[inline]
   pub const fn new(public: Public, ty: PBox<Ty>, span: Span) -> Self {
     Self { public, ty, span }
   }
@@ -408,6 +424,7 @@ pub struct Apply {
 }
 
 impl Apply {
+  #[inline]
   pub const fn new(
     unsafeness: Unsafe,
     kind: ApplyKind,
@@ -444,6 +461,7 @@ pub struct Decl {
 }
 
 impl Decl {
+  #[inline]
   pub const fn new(
     mutability: Mutability,
     kind: DeclKind,
@@ -483,6 +501,7 @@ pub struct Fun {
 }
 
 impl Fun {
+  #[inline]
   pub const fn new(
     public: Public,
     asyncness: Async,
@@ -519,6 +538,7 @@ pub struct Prototype {
 }
 
 impl Prototype {
+  #[inline]
   pub const fn new(
     pattern: PBox<Expr>,
     inputs: Vec<PBox<Arg>>,
@@ -556,6 +576,7 @@ pub struct Arg {
 }
 
 impl Arg {
+  #[inline]
   pub const fn new(pattern: Pattern, ty: PBox<Ty>, span: Span) -> Self {
     Self { pattern, ty, span }
   }
@@ -583,6 +604,7 @@ pub struct Block {
 }
 
 impl Block {
+  #[inline]
   pub const fn new(exprs: Vec<PBox<Expr>>, span: Span) -> Self {
     Self { exprs, span }
   }
@@ -597,6 +619,7 @@ pub struct Unit {
 }
 
 impl Unit {
+  #[inline]
   pub const fn new(
     binds: Vec<PBox<Stmt>>,
     mocks: Vec<PBox<Fun>>,
@@ -619,6 +642,7 @@ pub struct Expr {
 }
 
 impl Expr {
+  #[inline]
   pub const fn new(kind: ExprKind, span: Span) -> Self {
     Self { kind, span }
   }
@@ -662,6 +686,7 @@ pub struct Lit {
 }
 
 impl Lit {
+  #[inline]
   pub const fn new(kind: LitKind, span: Span) -> Self {
     Self { kind, span }
   }

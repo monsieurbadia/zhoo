@@ -14,6 +14,7 @@ pub struct Context<'a> {
 }
 
 impl<'a> Context<'a> {
+  #[inline]
   pub fn new(program: &'a Program) -> Self {
     let mut scope_map = ScopeMap::default();
 

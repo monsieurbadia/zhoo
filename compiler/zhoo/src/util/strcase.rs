@@ -46,7 +46,7 @@ pub fn is_snake_screaming_case<T: AsRef<str>>(text: T) -> bool {
   screamingsnakecase::is_screaming_snake_case(text.as_ref())
 }
 
-pub fn to_snake_case_screaming<T: AsRef<str>>(text: T) -> String {
+pub fn to_snake_screaming_case<T: AsRef<str>>(text: T) -> String {
   screamingsnakecase::to_screaming_snake_case(text.as_ref())
 }
 

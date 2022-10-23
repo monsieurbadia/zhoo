@@ -18,7 +18,7 @@ use crate::util::constant::{
 
 use crate::util::pack;
 
-use codegen::ir::{ArgumentPurpose, GlobalValue};
+use codegen::ir::GlobalValue;
 use cranelift::prelude::{Block as CBlock, *};
 use cranelift_codegen::settings::Flags;
 use cranelift_codegen::{settings, Context};
@@ -30,17 +30,19 @@ use std::collections::HashMap;
 
 pub type BuildResult = Result<Box<dyn FnOnce()>, String>;
 
+const COMPILER_NAME: &str = "zhoo";
+
 #[inline]
 pub fn generate(program: &Program) -> Codegen {
   Codegen::new(program).generate()
 }
 
 pub struct Codegen<'a> {
-  builder_context: FunctionBuilderContext,
+  function_builder_context: FunctionBuilderContext,
   module: ObjectModule,
   program: &'a Program,
   blocks: Vec<CBlock>,
-  ctx: Context,
+  context: Context,
   ir: String,
   funs: HashMap<String, CompiledFunction>,
   globals: HashMap<String, GlobalValue>,
@@ -48,16 +50,12 @@ pub struct Codegen<'a> {
   variable_builder: VariableBuilder,
 }
 
-// todo:
-// option
-//  - output ir: bool
-//  - option level: string
-
 impl<'a> Codegen<'a> {
   #[inline]
   fn new(program: &'a Program) -> Self {
     let mut flag_builder = settings::builder();
 
+    // https://docs.rs/cranelift/latest/cranelift/prelude/settings/struct.Flags.html
     flag_builder
       .set("opt_level", "speed_and_size")
       .expect("set optlevel");
@@ -67,7 +65,7 @@ impl<'a> Codegen<'a> {
 
     let object_builder = ObjectBuilder::new(
       isa,
-      "zhoo".to_string(),
+      COMPILER_NAME.to_string(),
       cranelift_module::default_libcall_names(),
     )
     .unwrap();
@@ -75,8 +73,8 @@ impl<'a> Codegen<'a> {
     let module = ObjectModule::new(object_builder);
 
     let mut me = Self {
-      ctx: module.make_context(),
-      builder_context: FunctionBuilderContext::new(),
+      context: module.make_context(),
+      function_builder_context: FunctionBuilderContext::new(),
       module,
       program,
       blocks: vec![],
@@ -113,7 +111,7 @@ impl<'a> Codegen<'a> {
   }
 
   fn generate_fun(&mut self, fun: &Fun) {
-    let signature = &mut self.ctx.func.signature;
+    let signature = &mut self.context.func.signature;
     let params = &fun.prototype.inputs;
 
     for _ in params {
@@ -124,21 +122,16 @@ impl<'a> Codegen<'a> {
       .returns
       .push(AbiParam::new(fun.prototype.output.as_ty().into()));
 
-    let vm_context = AbiParam::special(
-      self.module.target_config().pointer_type(),
-      ArgumentPurpose::VMContext,
-    );
-
-    signature.params.push(vm_context);
-
     let func_name = fun.prototype.pattern.to_string();
 
     let func_id = self
       .generate_prototype(&fun.prototype, Linkage::Export)
       .unwrap();
 
-    let mut builder =
-      FunctionBuilder::new(&mut self.ctx.func, &mut self.builder_context);
+    let mut builder = FunctionBuilder::new(
+      &mut self.context.func,
+      &mut self.function_builder_context,
+    );
 
     let entry_block = builder.create_block();
     builder.append_block_params_for_function_params(entry_block);
@@ -187,12 +180,16 @@ impl<'a> Codegen<'a> {
     translator.builder.ins().return_(&[return_value]);
     translator.builder.finalize();
 
-    optimize(&mut self.ctx, self.module.isa()).unwrap();
+    optimize(&mut self.context, self.module.isa()).unwrap();
 
-    self.ir = self.ctx.func.display().to_string();
+    self.ir = self.context.func.display().to_string();
 
-    self.module.define_function(func_id, &mut self.ctx).unwrap();
-    self.module.clear_context(&mut self.ctx);
+    self
+      .module
+      .define_function(func_id, &mut self.context)
+      .unwrap();
+
+    self.module.clear_context(&mut self.context);
   }
 
   fn generate_stmt_ext(&mut self, ext: &Ext, linkage: Linkage) {
@@ -240,7 +237,7 @@ impl<'a> Codegen<'a> {
         let id =
           match self.module.declare_function(func_name, linkage, &signature) {
             Ok(id) => id,
-            Err(e) => return Err(format!("{e}")),
+            Err(error) => return Err(format!("{error}")),
           };
 
         self.funs.insert(
@@ -288,18 +285,18 @@ impl<'a> Codegen<'a> {
 
     for _ in inputs.iter() {
       let abi_param = AbiParam::new(self.module.target_config().pointer_type());
-      self.ctx.func.signature.params.push(abi_param);
+      self.context.func.signature.params.push(abi_param);
     }
 
     let abi_param = AbiParam::new(self.module.target_config().pointer_type());
-    self.ctx.func.signature.returns.push(abi_param);
+    self.context.func.signature.returns.push(abi_param);
 
     let func_id = self
       .module
       .declare_function(
         &builtin.name,
         Linkage::Import,
-        &self.ctx.func.signature,
+        &self.context.func.signature,
       )
       .unwrap();
 
@@ -308,7 +305,7 @@ impl<'a> Codegen<'a> {
       CompiledFunction::new(func_id, false, inputs.len()),
     );
 
-    self.module.clear_context(&mut self.ctx);
+    self.module.clear_context(&mut self.context);
 
     func_id
   }

@@ -24,6 +24,7 @@ type Helps = Vec<String>;
 
 pub type ReportMessage = (Kind, String, Labels, Notes, Helps);
 
+#[derive(Debug)]
 pub enum Report {
   Io(io::Error),
   Syntax(SyntaxKind),

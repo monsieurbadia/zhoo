@@ -1,8 +1,9 @@
 use crate::front::analyzer::context::Context;
 
 use crate::front::parser::tree::ast::{
-  BinOp, BinOpKind, Block, Decl, Expr, ExprKind, Fun, Lit, LitKind,
-  PatternKind, Program, Prototype, Stmt, StmtKind, Struct, UnOp, UnOpKind,
+  Apply, Behavior, BinOp, BinOpKind, Block, Decl, Enum, Expr, ExprKind, Ext,
+  Fun, Lit, LitKind, MacroCall, MacroDecl, PatternKind, Program, Prototype,
+  Stmt, StmtKind, Struct, TyAlias, UnOp, UnOpKind, Unit,
 };
 
 use crate::front::parser::tree::ty::{AsTy, Ty};
@@ -10,72 +11,172 @@ use crate::front::parser::tree::PBox;
 use crate::util::error::{Report, Result, SemanticKind};
 use crate::util::span::Span;
 
-// fixme #1
-//
-// too many raise, i should rather use the result type to return an error.
-// errors will be stored in a vector
-
 #[inline]
 pub fn check(program: &Program) -> Result<()> {
   let mut context = Context::new(program);
 
   for stmt in &context.program.stmts {
-    check_stmt(&mut context, stmt);
+    match check_stmt(&mut context, stmt) {
+      Ok(_) => {}
+      Err(report) => context.program.reporter.add_report(report),
+    };
   }
+
+  context.program.reporter.abort_if_has_error();
 
   Ok(())
 }
 
-fn check_stmt(context: &mut Context, stmt: &Stmt) {
+fn check_stmt(context: &mut Context, stmt: &Stmt) -> Result<PBox<Ty>> {
   match &stmt.kind {
+    StmtKind::Ext(ext) => check_stmt_ext(context, ext),
+    StmtKind::MacroDecl(macro_decl) => {
+      check_stmt_macro_decl(context, macro_decl)
+    }
+    StmtKind::MacroCall(macro_call) => {
+      check_stmt_macro_call(context, macro_call)
+    }
+    StmtKind::TyAlias(ty_alias) => check_stmt_ty_alias(context, ty_alias),
+    StmtKind::Behavior(behavior) => check_stmt_behavior(context, behavior),
+    StmtKind::Enum(enum_def) => check_stmt_enum(context, enum_def),
+    StmtKind::Struct(struct_def) => check_stmt_struct(context, struct_def),
+    StmtKind::Apply(apply) => check_stmt_apply(context, apply),
     StmtKind::Val(decl) => check_stmt_decl(context, decl),
+    StmtKind::Vals(decls) => check_stmt_decls(context, decls),
     StmtKind::Fun(fun) => check_stmt_fun(context, fun),
-    _ => {}
+    StmtKind::Unit(unit) => check_stmt_unit(context, unit),
   }
 }
 
-fn check_stmt_decl(context: &mut Context, decl: &Decl) {
-  check_decl(context, decl);
+fn check_stmt_ext(_context: &mut Context, _ext: &Ext) -> Result<PBox<Ty>> {
+  todo!()
 }
 
-fn check_stmt_fun(context: &mut Context, fun: &Fun) {
+fn check_stmt_macro_decl(
+  _context: &mut Context,
+  _macro_decl: &MacroDecl,
+) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_stmt_macro_call(
+  _context: &mut Context,
+  _macro_call: &MacroCall,
+) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_stmt_ty_alias(
+  _context: &mut Context,
+  _ty_alias: &TyAlias,
+) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_stmt_behavior(
+  _context: &mut Context,
+  _behavior: &Behavior,
+) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_stmt_enum(
+  _context: &mut Context,
+  _enum_def: &Enum,
+) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_stmt_struct(
+  _context: &mut Context,
+  _struct_def: &Struct,
+) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_stmt_apply(
+  _context: &mut Context,
+  _apply: &Apply,
+) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_stmt_decl(context: &mut Context, decl: &Decl) -> Result<PBox<Ty>> {
+  check_decl(context, decl)
+}
+
+fn check_stmt_decls(
+  context: &mut Context,
+  decls: &Vec<PBox<Decl>>,
+) -> Result<PBox<Ty>> {
+  check_decls(context, decls)
+}
+
+fn check_decls(
+  context: &mut Context,
+  decls: &Vec<PBox<Decl>>,
+) -> Result<PBox<Ty>> {
+  let mut ty = Ty::VOID.into();
+
+  for decl in decls {
+    ty = check_decl(context, decl)?;
+  }
+
+  Ok(ty)
+}
+
+fn check_stmt_fun(context: &mut Context, fun: &Fun) -> Result<PBox<Ty>> {
   match context.scope_map.set_fun(
     fun.prototype.pattern.to_string(),
     (fun.prototype.as_inputs_tys(), fun.prototype.as_ty()),
   ) {
     Ok(_) => {
       context.scope_map.enter_scope();
-      check_prototype(context, &fun.prototype);
-      check_block(context, &fun.body);
+      check_prototype(context, &fun.prototype)?;
+      check_block(context, &fun.body)?;
       context.scope_map.exit_scope();
+
+      Ok(Ty::with_void(fun.span).into())
     }
-    Err(_error) => todo!(),
+    Err(_) => Err(Report::Semantic(SemanticKind::NameClash(
+      fun.prototype.pattern.span,
+      fun.prototype.pattern.to_string(),
+    ))),
   }
 }
 
-fn check_prototype(context: &mut Context, prototype: &Prototype) {
+fn check_prototype(context: &mut Context, prototype: &Prototype) -> Result<()> {
   for input in &prototype.inputs {
     if context
       .scope_map
       .set_decl(input.pattern.to_string(), input.ty.to_owned())
       .is_err()
     {
-      context.program.reporter.add_report(Report::Semantic(
-        SemanticKind::NameClash(input.span, input.to_string()),
-      ))
+      return Err(Report::Semantic(SemanticKind::NameClash(
+        input.span,
+        input.to_string(),
+      )));
     }
   }
 
   context.return_ty = prototype.as_ty();
+
+  Ok(())
 }
 
-fn check_block(context: &mut Context, block: &Block) {
+fn check_block(context: &mut Context, block: &Block) -> Result<()> {
   for expr in &block.exprs {
-    check_expr(context, expr);
+    check_expr(context, expr)?;
   }
+
+  Ok(())
 }
 
-fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
+fn check_stmt_unit(_context: &mut Context, _unit: &Unit) -> Result<PBox<Ty>> {
+  todo!()
+}
+
+fn check_expr(context: &mut Context, expr: &Expr) -> Result<PBox<Ty>> {
   match &expr.kind {
     ExprKind::Stmt(stmt) => check_expr_stmt(context, stmt),
     ExprKind::Decl(decl) => check_expr_decl(context, decl),
@@ -129,20 +230,24 @@ fn check_expr(context: &mut Context, expr: &Expr) -> PBox<Ty> {
   }
 }
 
-fn check_expr_stmt(context: &mut Context, stmt: &Stmt) -> PBox<Ty> {
-  check_stmt(context, stmt);
-  Ty::with_void(stmt.span).into()
+fn check_expr_stmt(context: &mut Context, stmt: &Stmt) -> Result<PBox<Ty>> {
+  check_stmt(context, stmt)?;
+
+  Ok(Ty::with_void(stmt.span).into())
 }
 
-fn check_expr_decl(context: &mut Context, decl: &Decl) -> PBox<Ty> {
+fn check_expr_decl(context: &mut Context, decl: &Decl) -> Result<PBox<Ty>> {
   check_decl(context, decl)
 }
 
-fn check_expr_decls(_context: &mut Context, _decls: &[PBox<Decl>]) -> PBox<Ty> {
-  todo!()
+fn check_expr_decls(
+  context: &mut Context,
+  decls: &Vec<PBox<Decl>>,
+) -> Result<PBox<Ty>> {
+  check_decls(context, decls)
 }
 
-fn check_decl(context: &mut Context, decl: &Decl) -> PBox<Ty> {
+fn check_decl(context: &mut Context, decl: &Decl) -> Result<PBox<Ty>> {
   let name = &decl.pattern;
 
   let ty = if let Some(ty) = &decl.ty {
@@ -152,25 +257,23 @@ fn check_decl(context: &mut Context, decl: &Decl) -> PBox<Ty> {
   };
 
   let Ok(_) = context.scope_map.set_decl(name.to_string(), ty) else {
-    // fixme #1
-    context.program.reporter.raise(
-      Report::Semantic(SemanticKind::NameClash(name.span, name.to_string())),
-    );
+    return Err(Report::Semantic(SemanticKind::NameClash(name.span, name.to_string())));
   };
 
   let name = match &name.kind {
     PatternKind::Identifier(identifier) => identifier,
-    _ => panic!("not good at all"), // fixme #1
+    _ => panic!("should be an identifier"),
   };
 
-  let t1 = check_expr(context, name);
-  let t2 = check_expr(context, &decl.value);
+  let t1 = check_expr(context, name)?;
+  let t2 = check_expr(context, &decl.value)?;
 
-  unify_tys(context, &t1, &t2);
-  Ty::with_void(decl.span).into()
+  unify_tys(context, &t1, &t2)?;
+
+  Ok(Ty::with_void(decl.span).into())
 }
 
-fn check_expr_lit(lit: &Lit) -> PBox<Ty> {
+fn check_expr_lit(lit: &Lit) -> Result<PBox<Ty>> {
   match &lit.kind {
     LitKind::Bool(_) => check_expr_lit_bool(lit.span),
     LitKind::Int(_) => check_expr_lit_int(lit.span),
@@ -179,35 +282,36 @@ fn check_expr_lit(lit: &Lit) -> PBox<Ty> {
   }
 }
 
-fn check_expr_lit_bool(span: Span) -> PBox<Ty> {
-  Ty::with_bool(span).into()
+fn check_expr_lit_bool(span: Span) -> Result<PBox<Ty>> {
+  Ok(Ty::with_bool(span).into())
 }
 
-fn check_expr_lit_int(span: Span) -> PBox<Ty> {
-  Ty::with_int(span).into()
+fn check_expr_lit_int(span: Span) -> Result<PBox<Ty>> {
+  Ok(Ty::with_int(span).into())
 }
 
-fn check_expr_lit_real(span: Span) -> PBox<Ty> {
-  Ty::with_real(span).into()
+fn check_expr_lit_real(span: Span) -> Result<PBox<Ty>> {
+  Ok(Ty::with_real(span).into())
 }
 
-fn check_expr_lit_str(span: Span) -> PBox<Ty> {
-  Ty::with_str(span).into()
+fn check_expr_lit_str(span: Span) -> Result<PBox<Ty>> {
+  Ok(Ty::with_str(span).into())
 }
 
 fn check_expr_identifier(
   context: &mut Context,
   span: Span,
   identifier: &str,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   if let Some(ty) = context.scope_map.decl(identifier) {
-    ty.clone()
+    Ok(ty.clone())
   } else if let Some(ty) = context.scope_map.fun(identifier) {
-    ty.1.clone()
+    Ok(ty.1.clone())
   } else {
-    context.program.reporter.raise(Report::Semantic(
-      SemanticKind::IdentifierNotFound(span, identifier.to_string()),
-    ));
+    Err(Report::Semantic(SemanticKind::IdentifierNotFound(
+      span,
+      identifier.to_string(),
+    )))
   }
 }
 
@@ -215,13 +319,16 @@ fn check_expr_call(
   context: &mut Context,
   callee: &Expr,
   inputs: &[PBox<Expr>],
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   let (fun_input_tys, fun_return_ty) =
     match context.scope_map.fun(&callee.to_string()) {
       Some(fun_ty) => fun_ty,
-      None => context.program.reporter.raise(Report::Semantic(
-        SemanticKind::FunctionNotFound(callee.span, callee.to_string()),
-      )),
+      None => {
+        return Err(Report::Semantic(SemanticKind::FunctionNotFound(
+          callee.span,
+          callee.to_string(),
+        )));
+      }
     };
 
   if inputs.len() != fun_input_tys.len() {
@@ -233,56 +340,55 @@ fn check_expr_call(
 
     let should_be = format!("{}({})", callee, expected_inputs);
 
-    context.program.reporter.add_report(Report::Semantic(
-      SemanticKind::ArgumentsMismatch(
-        callee.span,
-        expected_inputs,
-        fun_input_tys.len(),
-        inputs.len(),
-        should_be,
-      ),
-    ))
+    return Err(Report::Semantic(SemanticKind::ArgumentsMismatch(
+      callee.span,
+      expected_inputs,
+      fun_input_tys.len(),
+      inputs.len(),
+      should_be,
+    )));
   }
 
   for (x, input) in inputs.iter().enumerate() {
     if x < fun_input_tys.len() {
-      ensure_expr_ty(&mut context.clone(), input, &fun_input_tys[x]);
+      ensure_expr_ty(&mut context.clone(), input, &fun_input_tys[x])?;
     }
   }
 
-  ensure_expr_ty(&mut context.clone(), callee, fun_return_ty);
-  fun_return_ty.clone()
+  ensure_expr_ty(&mut context.clone(), callee, fun_return_ty)?;
+
+  Ok(fun_return_ty.clone())
 }
 
-fn check_expr_un_op(context: &mut Context, op: &UnOp, rhs: &Expr) -> PBox<Ty> {
-  let t1 = check_expr(context, rhs);
+fn check_expr_un_op(
+  context: &mut Context,
+  op: &UnOp,
+  rhs: &Expr,
+) -> Result<PBox<Ty>> {
+  let t1 = check_expr(context, rhs)?;
 
   match &op.node {
     UnOpKind::Neg => {
       if !t1.is_numeric() {
-        context.program.reporter.add_report(Report::Semantic(
-          SemanticKind::TypeMismatch(
-            Span::merge(&t1.span, &op.span),
-            Ty::INT.to_string(),
-            t1.to_string(),
-          ),
-        ));
+        return Err(Report::Semantic(SemanticKind::TypeMismatch(
+          Span::merge(&t1.span, &op.span),
+          Ty::INT.to_string(),
+          t1.to_string(),
+        )));
       }
 
-      Ty::with_int(Span::merge(&op.span, &rhs.span)).into()
+      Ok(Ty::with_int(Span::merge(&op.span, &rhs.span)).into())
     }
     UnOpKind::Not => {
       if !t1.is_boolean() {
-        context.program.reporter.add_report(Report::Semantic(
-          SemanticKind::TypeMismatch(
-            Span::merge(&t1.span, &op.span),
-            Ty::BOOL.to_string(),
-            t1.to_string(),
-          ),
-        ));
+        return Err(Report::Semantic(SemanticKind::TypeMismatch(
+          Span::merge(&t1.span, &op.span),
+          Ty::BOOL.to_string(),
+          t1.to_string(),
+        )));
       }
 
-      Ty::with_bool(Span::merge(&op.span, &rhs.span)).into()
+      Ok(Ty::with_bool(Span::merge(&op.span, &rhs.span)).into())
     }
   }
 }
@@ -293,50 +399,54 @@ fn check_expr_bin_op(
   lhs: &Expr,
   op: &BinOp,
   rhs: &Expr,
-) -> PBox<Ty> {
-  let t1 = check_expr(context, lhs);
-  let t2 = check_expr(context, rhs);
+) -> Result<PBox<Ty>> {
+  let t1 = check_expr(context, lhs)?;
+  let t2 = check_expr(context, rhs)?;
 
   match &op.node {
     BinOpKind::Lt | BinOpKind::Le | BinOpKind::Gt | BinOpKind::Ge => {
       if !t1.kind.is_int() || !t2.kind.is_int() {
-        // fixme #1
-        context.program.reporter.raise(Report::Semantic(
-          SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
-        ));
+        return Err(Report::Semantic(SemanticKind::TypeMismatch(
+          op.span,
+          t1.to_string(),
+          t2.to_string(),
+        )));
       }
 
-      Ty::with_bool(Span::merge(&lhs.span, &rhs.span)).into()
+      Ok(Ty::with_bool(Span::merge(&lhs.span, &rhs.span)).into())
     }
     BinOpKind::And | BinOpKind::Or => {
       if t1.kind != t2.kind {
-        // fixme #1
-        context.program.reporter.raise(Report::Semantic(
-          SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
-        ));
+        return Err(Report::Semantic(SemanticKind::TypeMismatch(
+          op.span,
+          t1.to_string(),
+          t2.to_string(),
+        )));
       }
 
-      Ty::with_bool(Span::merge(&lhs.span, &rhs.span)).into()
+      Ok(Ty::with_bool(Span::merge(&lhs.span, &rhs.span)).into())
     }
     BinOpKind::Eq | BinOpKind::Ne => {
       if t1.kind != t2.kind {
-        // fixme #1
-        context.program.reporter.raise(Report::Semantic(
-          SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
-        ));
+        return Err(Report::Semantic(SemanticKind::TypeMismatch(
+          op.span,
+          t1.to_string(),
+          t2.to_string(),
+        )));
       }
 
-      Ty::with_bool(Span::merge(&lhs.span, &rhs.span)).into()
+      Ok(Ty::with_bool(Span::merge(&lhs.span, &rhs.span)).into())
     }
     _ => {
       if t1.kind != t2.kind {
-        // fixme #1
-        context.program.reporter.raise(Report::Semantic(
-          SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
-        ));
+        return Err(Report::Semantic(SemanticKind::TypeMismatch(
+          op.span,
+          t1.to_string(),
+          t2.to_string(),
+        )));
       }
 
-      Ty::with_int(Span::merge(&lhs.span, &rhs.span)).into()
+      Ok(Ty::with_int(Span::merge(&lhs.span, &rhs.span)).into())
     }
   }
 }
@@ -346,11 +456,12 @@ fn check_expr_assign(
   lhs: &Expr,
   _: &BinOp,
   rhs: &Expr,
-) -> PBox<Ty> {
-  let t1 = check_expr(context, lhs);
+) -> Result<PBox<Ty>> {
+  let t1 = check_expr(context, lhs)?;
 
-  ensure_expr_ty(context, rhs, &t1);
-  Ty::with_void(Span::merge(&lhs.span, &rhs.span)).into()
+  ensure_expr_ty(context, rhs, &t1)?;
+
+  Ok(Ty::with_void(Span::merge(&lhs.span, &rhs.span)).into())
 }
 
 fn check_expr_assign_op(
@@ -358,60 +469,62 @@ fn check_expr_assign_op(
   lhs: &Expr,
   op: &BinOp,
   rhs: &Expr,
-) -> PBox<Ty> {
-  let t1 = check_expr(context, lhs);
-  let t2 = check_expr(context, rhs);
+) -> Result<PBox<Ty>> {
+  let t1 = check_expr(context, lhs)?;
+  let t2 = check_expr(context, rhs)?;
 
   if !op.node.is_assign_op() {
-    // fixme #1
-    context.program.reporter.raise(Report::Semantic(
-      SemanticKind::TypeMismatch(op.span, t1.to_string(), t2.to_string()),
-    ));
+    return Err(Report::Semantic(SemanticKind::TypeMismatch(
+      op.span,
+      t1.to_string(),
+      t2.to_string(),
+    )));
   }
 
   expect_equality(context, &t1, &t2);
-  Ty::with_void(Span::merge(&lhs.span, &rhs.span)).into()
+
+  Ok(Ty::with_void(Span::merge(&lhs.span, &rhs.span)).into())
 }
 
 fn check_expr_return(
   context: &mut Context,
   maybe_expr: &Option<PBox<Expr>>,
   return_span: Span,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   if let Some(expr) = maybe_expr {
-    let t1 = check_expr(context, expr);
+    let t1 = check_expr(context, expr)?;
 
     expect_equality(context, &t1, &context.return_ty.clone());
 
-    return t1;
+    return Ok(t1);
   };
 
-  Ty::with_void(return_span).into()
+  Ok(Ty::with_void(return_span).into())
 }
 
-fn check_expr_block(context: &mut Context, body: &Block) -> PBox<Ty> {
+fn check_expr_block(context: &mut Context, body: &Block) -> Result<PBox<Ty>> {
   let mut t1 = Ty::with_void(body.span).into();
 
   for expr in &body.exprs {
-    t1 = check_expr(context, expr);
+    t1 = check_expr(context, expr)?;
   }
 
-  t1
+  Ok(t1)
 }
 
-fn check_expr_loop(context: &mut Context, body: &Block) -> PBox<Ty> {
+fn check_expr_loop(context: &mut Context, body: &Block) -> Result<PBox<Ty>> {
   context.loop_depth += 1;
-  check_block(context, body);
+  check_block(context, body)?;
   context.loop_depth -= 1;
 
-  Ty::with_void(body.span).into()
+  Ok(Ty::with_void(body.span).into())
 }
 
 fn check_expr_while(
   context: &mut Context,
   condition: &Expr,
   body: &Block,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   check_expr_while_or_until(context, condition, body)
 }
 
@@ -419,7 +532,7 @@ fn check_expr_until(
   context: &mut Context,
   condition: &Expr,
   body: &Block,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   check_expr_while_or_until(context, condition, body)
 }
 
@@ -427,51 +540,56 @@ fn check_expr_while_or_until(
   context: &mut Context,
   condition: &Expr,
   body: &Block,
-) -> PBox<Ty> {
-  ensure_expr_ty(context, condition, &Ty::with_bool(condition.span));
+) -> Result<PBox<Ty>> {
+  ensure_expr_ty(context, condition, &Ty::with_bool(condition.span))?;
   context.loop_depth += 1;
-  check_block(context, body);
+  check_block(context, body)?;
   context.loop_depth -= 1;
 
-  Ty::with_void(body.span).into()
+  Ok(Ty::with_void(body.span).into())
 }
 
 fn check_expr_break(
   context: &mut Context,
   maybe_expr: &Option<PBox<Expr>>,
   origin: &Expr,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   if context.loop_depth == 0 {
-    context.program.reporter.add_report(Report::Semantic(
-      SemanticKind::OutOfLoop(origin.span, origin.to_string()),
-    ));
+    return Err(Report::Semantic(SemanticKind::OutOfLoop(
+      origin.span,
+      origin.to_string(),
+    )));
   }
 
   if let Some(expr) = maybe_expr {
-    let t1 = check_expr(context, expr);
+    let t1 = check_expr(context, expr)?;
 
     expect_equality(context, &t1, &context.return_ty.clone());
 
-    return t1;
+    return Ok(t1);
   }
 
-  Ty::with_void(origin.span).into()
+  Ok(Ty::with_void(origin.span).into())
 }
 
-fn check_expr_continue(context: &mut Context, origin: &Expr) -> PBox<Ty> {
+fn check_expr_continue(
+  context: &mut Context,
+  origin: &Expr,
+) -> Result<PBox<Ty>> {
   if context.loop_depth == 0 {
-    context.program.reporter.add_report(Report::Semantic(
-      SemanticKind::OutOfLoop(origin.span, origin.to_string()),
-    ));
+    return Err(Report::Semantic(SemanticKind::OutOfLoop(
+      origin.span,
+      origin.to_string(),
+    )));
   }
 
-  Ty::with_void(origin.span).into()
+  Ok(Ty::with_void(origin.span).into())
 }
 
 fn check_expr_raise(
   _context: &mut Context,
   _maybe_expr: &Option<PBox<Expr>>,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   todo!()
 }
 
@@ -480,10 +598,10 @@ fn check_expr_when(
   condition: &Expr,
   consequence: &Expr,
   alternative: &Expr,
-) -> PBox<Ty> {
-  let t1 = check_expr(context, condition);
-  let t2 = check_expr(context, consequence);
-  let t3 = check_expr(context, alternative);
+) -> Result<PBox<Ty>> {
+  let t1 = check_expr(context, condition)?;
+  let t2 = check_expr(context, consequence)?;
+  let t3 = check_expr(context, alternative)?;
   let boolean = Ty::with_bool(condition.span);
 
   expect_equality(context, &t1, &boolean);
@@ -495,35 +613,32 @@ fn check_expr_if_else(
   condition: &Expr,
   consequence: &Expr,
   maybe_alternative: &Option<PBox<Expr>>,
-) -> PBox<Ty> {
-  let t1 = check_expr(context, condition);
-  let t2 = check_expr(context, consequence);
-  let Some(alternative) = maybe_alternative else { return t2; };
-  let t3 = check_expr(context, alternative);
+) -> Result<PBox<Ty>> {
+  let t1 = check_expr(context, condition)?;
+  let t2 = check_expr(context, consequence)?;
+  let Some(alternative) = maybe_alternative else { return Ok(t2); };
+  let t3 = check_expr(context, alternative)?;
 
   if !t1.is_boolean() {
     let boolean = Ty::with_bool(condition.span);
 
-    // fixme #1
-    context.program.reporter.raise(Report::Semantic(
-      SemanticKind::TypeMismatch(
-        Span::merge(&t1.span, &boolean.span),
-        boolean.to_string(),
-        t1.to_string(),
-      ),
-    ));
+    return Err(Report::Semantic(SemanticKind::TypeMismatch(
+      Span::merge(&t1.span, &boolean.span),
+      boolean.to_string(),
+      t1.to_string(),
+    )));
   }
 
   expect_equality(context, &t2, &t3);
 
-  t2
+  Ok(t2)
 }
 
 fn check_expr_lambda(
   _context: &mut Context,
   _args: &[PBox<Expr>],
   _block_or_expr: &Expr,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   todo!()
 }
 
@@ -531,14 +646,14 @@ fn check_expr_array(
   context: &mut Context,
   span: Span,
   elements: &[PBox<Expr>],
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   let element_tys = elements
     .iter()
-    .map(|element| check_expr(context, element))
+    .map(|element| check_expr(context, element).unwrap())
     .collect::<Vec<PBox<Ty>>>();
 
   if element_tys.is_empty() {
-    return Ty::with_array(Ty::INFER.into(), None, span).into();
+    return Ok(Ty::with_array(Ty::INFER.into(), None, span).into());
   }
 
   let mut element_tys = element_tys.into_iter();
@@ -548,7 +663,7 @@ fn check_expr_array(
     expect_equality(context, &first_ty, &ty);
   }
 
-  Ty::with_array(first_ty, Some(elements.len() as i64), span).into()
+  Ok(Ty::with_array(first_ty, Some(elements.len() as i64), span).into())
 }
 
 // todo: needs work
@@ -557,17 +672,18 @@ fn check_expr_array_access(
   _span: Span,
   indexed: &Expr,
   index: &Expr,
-) -> PBox<Ty> {
-  let _indexed = check_expr(context, indexed);
-  let index = check_expr(context, index);
+) -> Result<PBox<Ty>> {
+  let _indexed = check_expr(context, indexed)?;
+  let index = check_expr(context, index)?;
 
   if index.kind != Ty::INT.kind {
-    context.program.reporter.add_report(Report::Semantic(
-      SemanticKind::InvalidIndex(index.span, index.kind.to_string()),
-    ));
+    return Err(Report::Semantic(SemanticKind::InvalidIndex(
+      index.span,
+      index.kind.to_string(),
+    )));
   }
 
-  index
+  Ok(index)
 }
 
 // todo (?)
@@ -575,13 +691,13 @@ fn check_expr_tuple(
   context: &mut Context,
   span: Span,
   elements: &[PBox<Expr>],
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   let element_tys = elements
     .iter()
-    .map(|element| check_expr(context, element))
+    .map(|element| check_expr(context, element).unwrap())
     .collect::<Vec<PBox<Ty>>>();
 
-  Ty::with_tuple(element_tys, span).into()
+  Ok(Ty::with_tuple(element_tys, span).into())
 }
 
 // todo: needs work
@@ -590,23 +706,24 @@ fn check_expr_tuple_access(
   _span: Span,
   indexed: &Expr,
   index: &Expr,
-) -> PBox<Ty> {
-  let _indexed = check_expr(context, indexed);
-  let index = check_expr(context, index);
+) -> Result<PBox<Ty>> {
+  let _indexed = check_expr(context, indexed)?;
+  let index = check_expr(context, index)?;
 
   if index.kind != Ty::INT.kind {
-    context.program.reporter.add_report(Report::Semantic(
-      SemanticKind::InvalidIndex(index.span, index.kind.to_string()),
-    ));
+    return Err(Report::Semantic(SemanticKind::InvalidIndex(
+      index.span,
+      index.kind.to_string(),
+    )));
   }
 
-  index
+  Ok(index)
 }
 
 fn check_expr_struct(
   _context: &mut Context,
   _struct_def: &PBox<Struct>,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   todo!()
 }
 
@@ -615,14 +732,14 @@ fn check_expr_struct_access(
   _span: Span,
   _indexed: &Expr,
   _index: &Expr,
-) -> PBox<Ty> {
+) -> Result<PBox<Ty>> {
   todo!()
 }
 
-fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> bool {
-  let t2 = check_expr(context, expr);
+fn ensure_expr_ty(context: &mut Context, expr: &Expr, t1: &Ty) -> Result<bool> {
+  let t2 = check_expr(context, expr)?;
 
-  expect_equality(context, t1, &t2)
+  Ok(expect_equality(context, t1, &t2))
 }
 
 fn expect_equality(context: &mut Context, t1: &Ty, t2: &Ty) -> bool {
@@ -634,19 +751,21 @@ fn expect_equality(context: &mut Context, t1: &Ty, t2: &Ty) -> bool {
         t2.to_string(),
       ),
     ));
+
     false
   } else {
     true
   }
 }
 
-fn unify_tys(context: &mut Context, t1: &Ty, t2: &Ty) -> PBox<Ty> {
+fn unify_tys(_context: &mut Context, t1: &Ty, t2: &Ty) -> Result<PBox<Ty>> {
   if t1.kind != t2.kind {
-    // fixme #1
-    context.program.reporter.raise(Report::Semantic(
-      SemanticKind::TypeMismatch(t2.span, t1.to_string(), t2.to_string()),
-    ));
+    return Err(Report::Semantic(SemanticKind::TypeMismatch(
+      t2.span,
+      t1.to_string(),
+      t2.to_string(),
+    )));
   }
 
-  t1.into()
+  Ok(t1.into())
 }

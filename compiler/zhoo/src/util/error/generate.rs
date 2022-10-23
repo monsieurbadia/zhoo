@@ -7,6 +7,7 @@ use crate::util::span::Span;
 // normally, there should be no similar errors in the
 // type checking phase, is right?
 
+#[derive(Debug)]
 pub enum GenerateKind {
   CallFunctionNotFound(Span, String),
   IdentifierNotFound(String),

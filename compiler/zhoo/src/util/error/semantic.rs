@@ -2,6 +2,7 @@ use super::report::ReportMessage;
 
 use crate::util::span::Span;
 
+#[derive(Debug)]
 pub enum SemanticKind {
   ArgumentsMismatch(Span, String, usize, usize, String),
   FunctionNotFound(Span, String),
@@ -24,7 +25,13 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
   use ariadne::Fmt;
 
   match kind {
-    SemanticKind::ArgumentsMismatch(span, inputs, expected_len, actual_len, should_be) => (
+    SemanticKind::ArgumentsMismatch(
+      span,
+      inputs,
+      expected_len,
+      actual_len,
+      should_be
+    ) => (
       ReportKind::Error(REPORT_ERROR),
       format!("{}", "arguments mismatch".fg(Color::title())),
       vec![(
@@ -48,7 +55,7 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
     ),
     SemanticKind::FunctionNotFound(span, name) => (
       ReportKind::Error(REPORT_ERROR),
-      format!("{}", format_args!("function {} not found", format_args!("`{name}`").bg(Color::hint())).fg(Color::error())),
+      format!("{}", format_args!("function {} not found", format_args!("`{name}`").fg(Color::hint())).fg(Color::error())),
       vec![(
         *span,
         "this call requires a function that does not exist in this scope.".to_string(),
@@ -59,7 +66,7 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
     ),
     SemanticKind::IdentifierNotFound(span, name) => (
       ReportKind::Error(REPORT_ERROR),
-      format!("{}", format_args!("identifier {} not found", format_args!("`{name}`").bg(Color::hint())).fg(Color::error())),
+      format!("{}", format_args!("identifier {} not found", format_args!("`{name}`").fg(Color::hint())).fg(Color::error())),
       vec![(
         *span,
         "this identifier do no exist in this scope".to_string(),
@@ -91,7 +98,8 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
       ),
       vec![(
         *span,
-        format!("to compile a program, i need a main function, add a `main` function to {entry_point}").fg(Color::error()).to_string(),
+        format!("to compile a program, i need a main function, add a `main` function to {entry_point}")
+          .fg(Color::error()).to_string(),
         Color::error(),
       )],
       vec![format!(
@@ -123,10 +131,13 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
     ),
     SemanticKind::NameClash(span, name) => (
       ReportKind::Error(REPORT_ERROR),
-      format!("variable `{}` already exist", name.fg(Color::hint())),
+      format!("the name `{}` already exist", name.fg(Color::hint())),
       vec![(
         *span,
-        format!("{}", "this name is already declared in the scope".fg(Color::error())),
+        format!(
+          "{}",
+          "this name is already declared in the scope".fg(Color::error())
+        ),
         Color::error(),
       )],
       vec![
@@ -136,10 +147,17 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
     ),
     SemanticKind::NamingConvention(identifier, naming, span) => (
       ReportKind::Warning(REPORT_WARNING),
-      format!("{} {} {} {}", "variable".fg(Color::title()), format!("`{identifier}`").fg(Color::hint()),  "should have a".fg(Color::title()), format!("`{naming}`").fg(Color::title())),
+      format!(
+        "{} {} {} {}",
+        "variable".fg(Color::title()),
+        format!("`{identifier}`").fg(Color::hint()),
+        "should have a".fg(Color::title()),
+        format!("`{naming}`").fg(Color::title()),
+      ),
       vec![(
         *span,
-        format!("change this identifier to {naming} convention: `{identifier}`").fg(Color::warning()).to_string(),
+        format!("change this identifier to {naming} convention: `{identifier}`")
+          .fg(Color::warning()).to_string(),
         Color::warning(),
       )],
       vec![],

@@ -1,3 +1,5 @@
+//! a very naive allocator implementation
+
 use std::cell::RefCell;
 
 thread_local! {

@@ -6,7 +6,7 @@ use crate::util::error::{Report, Reporter, Result, SemanticKind};
 use crate::util::span::Span;
 
 #[inline]
-pub fn check(program: &Program) -> Result<()> {
+pub(crate) fn check(program: &Program) -> Result<()> {
   let context = Context::new(program);
 
   if !context
@@ -20,7 +20,7 @@ pub fn check(program: &Program) -> Result<()> {
     context.program.reporter.add_report(Report::Semantic(
       SemanticKind::MainNotFound(
         Span::new(
-          context.program.span.hi as usize,
+          context.program.span.lo as usize,
           context.program.span.hi as usize,
         ),
         entry_point.display().to_string(),

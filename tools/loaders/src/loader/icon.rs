@@ -1,12 +1,24 @@
 use std::fmt;
 
+/// an icon enumeration
 #[derive(Debug)]
-pub enum Icon {
+pub(crate) enum Icon {
+  /// an icon variant for error
   Error,
+
+  /// an icon variant for info
   Info,
+
+  /// an icon variant for success
   Success,
+
+  /// an icon variant for time
   Time,
+
+  /// an icon variant for warning
   Warning,
+
+  /// an icon variant for custom
   Custom(String),
 }
 

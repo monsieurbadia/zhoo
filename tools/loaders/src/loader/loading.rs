@@ -10,13 +10,18 @@ use std::io::Write;
 use std::time::Duration;
 use std::{io, thread};
 
+/// the sleep duration
 const INTERVAL: u64 = 80;
+
+/// the end of file character
 const EOF: char = '\0';
 
+/// create the loading instance
 pub fn loading(spinner: Spinner) -> Loading {
   Loading::new(spinner, None)
 }
 
+/// create the loading instance with writer
 pub fn loading_with_writer<W: Write + Send + 'static>(
   spinner: Spinner,
   writer: W,
@@ -24,12 +29,14 @@ pub fn loading_with_writer<W: Write + Send + 'static>(
   Loading::with_writer(spinner, writer)
 }
 
+/// an instance of loading
 #[derive(Debug)]
 pub struct Loading {
   sender: Sender<Message>,
 }
 
 impl Loading {
+  /// create an instance of loading
   pub fn new(spinner: Spinner, writer: Option<Box<dyn Write + Send>>) -> Self {
     let (sender, receiver) = flume::unbounded::<Message>();
     let csender = sender.clone();
@@ -91,6 +98,7 @@ impl Loading {
     Self { sender: csender }
   }
 
+  /// create an instance of loading with a writer
   pub fn with_writer<W: Write + Send + 'static>(
     spinner: Spinner,
     writer: W,
@@ -98,39 +106,48 @@ impl Loading {
     Self::new(spinner, Some(Box::new(writer)))
   }
 
+  /// send an error message
   pub fn with_error<T: Into<String>>(&self, content: T) {
     block_on(send_with_error(&self.sender, content));
   }
 
+  /// send an icon message
   pub fn with_icon<T: Into<String>>(&self, icon: T, content: T) {
     block_on(send_with_icon(&self.sender, icon, content));
   }
 
+  /// send an info message
   pub fn with_info<T: Into<String>>(&self, content: T) {
     block_on(send_with_info(&self.sender, content));
   }
 
+  /// send a success message
   pub fn send_with_success<T: Into<String>>(&self, content: T) {
     block_on(send_with_success(&self.sender, content));
   }
 
+  /// send a text message
   pub fn with_text<T: Into<String>>(&self, content: T) {
     block_on(send_with_text(&self.sender, content));
   }
 
+  /// send a time message
   pub fn with_time<T: Into<String>>(&self, content: T) {
     block_on(send_with_time(&self.sender, content));
   }
 
+  /// send a warning message
   pub fn with_warning<T: Into<String>>(&self, content: T) {
     block_on(send_with_warning(&self.sender, content));
   }
 
+  /// stop the spinner
   pub fn stop(self) {
     block_on(send_stop(&self.sender))
   }
 }
 
+/// write a message to a writer
 async fn write<T: Into<String>, W: Write + Send>(
   mut writer: W,
   contents: T,
@@ -140,6 +157,7 @@ async fn write<T: Into<String>, W: Write + Send>(
   writer.flush()
 }
 
+/// send an error message
 async fn send_with_error<T: Into<String>>(
   sender: &Sender<Message>,
   content: T,
@@ -150,6 +168,7 @@ async fn send_with_error<T: Into<String>>(
     .expect("event to have been sent")
 }
 
+/// send an icon message
 async fn send_with_icon<T: Into<String>>(
   sender: &Sender<Message>,
   icon: T,
@@ -161,6 +180,7 @@ async fn send_with_icon<T: Into<String>>(
     .expect("event to have been sent")
 }
 
+/// send an info message
 async fn send_with_info<T: Into<String>>(sender: &Sender<Message>, content: T) {
   sender
     .send_async(Message::Next(Icon::Info, content.into()))
@@ -168,6 +188,7 @@ async fn send_with_info<T: Into<String>>(sender: &Sender<Message>, content: T) {
     .expect("event to have been sent")
 }
 
+/// send a success message
 async fn send_with_success<T: Into<String>>(
   sender: &Sender<Message>,
   content: T,
@@ -178,6 +199,7 @@ async fn send_with_success<T: Into<String>>(
     .expect("event to have been sent")
 }
 
+/// send a text message
 async fn send_with_text<T: Into<String>>(sender: &Sender<Message>, content: T) {
   sender
     .send_async(Message::WithText(content.into()))
@@ -185,6 +207,7 @@ async fn send_with_text<T: Into<String>>(sender: &Sender<Message>, content: T) {
     .expect("event to have been sent");
 }
 
+/// send a time message
 async fn send_with_time<T: Into<String>>(sender: &Sender<Message>, content: T) {
   sender
     .send_async(Message::Next(Icon::Time, content.into()))
@@ -192,6 +215,7 @@ async fn send_with_time<T: Into<String>>(sender: &Sender<Message>, content: T) {
     .expect("event to have been sent")
 }
 
+/// send a warning message
 async fn send_with_warning<T: Into<String>>(
   sender: &Sender<Message>,
   content: T,
@@ -202,6 +226,7 @@ async fn send_with_warning<T: Into<String>>(
     .expect("event to have been sent")
 }
 
+/// stop the spinner
 async fn send_stop(sender: &Sender<Message>) {
   sender
     .send_async(Message::Stop)

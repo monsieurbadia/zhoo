@@ -10,6 +10,7 @@ use pollster::block_on;
 use std::any::Any;
 use std::thread;
 
+/// an instance of the `compile` command
 #[derive(clap::Parser)]
 pub struct Compile {
   /// print the AST of the program
@@ -30,6 +31,7 @@ pub struct Compile {
 }
 
 impl Compile {
+  /// handle the `compile` command
   pub async fn handle(&self) {
     use crate::cmd::settings::Backend;
     use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
@@ -38,10 +40,10 @@ impl Compile {
 
     let settings = Settings {
       ast: self.ast,
-      no_motion: self.no_motion,
+      _no_motion: self.no_motion,
       input: self.input.to_string(),
       ir: self.ir,
-      backend: Backend::from(self.backend.to_string()),
+      _backend: Backend::from(self.backend.to_string()),
     };
 
     match compile(settings).await {
@@ -57,6 +59,7 @@ async fn compile(
   thread::spawn(move || block_on(compiling(settings))).join()
 }
 
+/// compile a `zhoo` program
 async fn compiling(settings: Settings) {
   use zhoo::back::codegen;
   use zhoo::front::{analyzer, parser};
@@ -78,7 +81,7 @@ async fn compiling(settings: Settings) {
   //
   // `program-name`: the name of the program from a configuration file
   // `version`: the version of the program from a configuration file
-  // `mode`: [dev|release]
+  // `mode`: [dev|release] --release
   // `backend`: [cranelift|llvm]
   // `time`: the compilation time in seconds
 
@@ -118,10 +121,10 @@ async fn compiling(settings: Settings) {
       thread::sleep(Duration::from_millis(INTERVAL)); // todo #1
       spinner.stop();
       done();
-      println!("🤖 compile `program-name` successfully\n"); // todo #2
+      println!("🤖 compile `program-name` successfully"); // todo #2
 
       if settings.ast {
-        println!("{}", program);
+        println!("\n{}", program);
       }
 
       // use as a margin bottom

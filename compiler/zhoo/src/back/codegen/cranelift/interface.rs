@@ -7,6 +7,7 @@ use cranelift_module::{DataContext, FuncId, Linkage, Module};
 use cranelift_object::ObjectModule;
 use fnv::FnvHashMap;
 
+/// an instance of a compile function
 pub struct CompiledFunction {
   pub id: FuncId,
   pub defined: bool,
@@ -14,6 +15,7 @@ pub struct CompiledFunction {
 }
 
 impl CompiledFunction {
+  /// create an instance of a compile function
   #[inline]
   pub const fn new(id: FuncId, defined: bool, input_len: usize) -> Self {
     Self {
@@ -24,13 +26,15 @@ impl CompiledFunction {
   }
 }
 
+/// an instance of a variable builder
 #[derive(Default)]
 pub struct VariableBuilder {
   pub index: u32,
 }
 
 impl VariableBuilder {
-  pub fn create_var(
+  /// create a variable
+  pub fn create_variable(
     &mut self,
     builder: &mut FunctionBuilder,
     value: Value,
@@ -47,12 +51,14 @@ impl VariableBuilder {
   }
 }
 
+/// an instance of a data builder
 #[derive(Default)]
-pub struct DataContextBuilder {
+pub struct DataBuilder {
   pub index: u32,
 }
 
-impl DataContextBuilder {
+impl DataBuilder {
+  /// create a data
   pub fn create_data(
     &mut self,
     builder: &mut FunctionBuilder,

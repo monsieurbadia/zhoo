@@ -1,8 +1,10 @@
 use std::fmt::{Debug, Display, Formatter, Pointer, Result};
 use std::ops::{Deref, DerefMut};
 
+/// an instance of a pbox smart pointer
 pub struct PBox<T: ?Sized>(pub Box<T>);
 
+/// create an instance of a pbox smart pointer
 #[inline]
 pub fn pbox<T: 'static>(value: T) -> PBox<T> {
   PBox(Box::new(value))

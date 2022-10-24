@@ -14,7 +14,7 @@ impl<'a, T: fmt::Display> fmt::Display for Sep<'a, T> {
       .collect::<Vec<String>>()
       .join(self.1);
 
-    write!(f, "{}", nodes)
+    write!(f, "{nodes}")
   }
 }
 
@@ -117,7 +117,7 @@ impl fmt::Display for Ext {
 
     let Some(body) = &self.body else { return write!(f, ";"); };
 
-    write!(f, " {}", body)
+    write!(f, " {body}")
   }
 }
 
@@ -132,9 +132,9 @@ impl fmt::Display for MacroDeclDef {
     let macro_decl_defs = Sep(&self.macro_decl_defs, "\n");
 
     match &self.kind {
-      MacroDeclDefKind::Parenthesis => write!(f, "(\n{}\n)", macro_decl_defs),
-      MacroDeclDefKind::Braces => write!(f, "{{\n{}\n}}", macro_decl_defs),
-      MacroDeclDefKind::Brackets => write!(f, "[\n{}\n]", macro_decl_defs),
+      MacroDeclDefKind::Parenthesis => write!(f, "(\n{macro_decl_defs}\n)"),
+      MacroDeclDefKind::Braces => write!(f, "{{\n{macro_decl_defs}\n}}"),
+      MacroDeclDefKind::Brackets => write!(f, "[\n{macro_decl_defs}\n]"),
     }
   }
 }
@@ -146,8 +146,22 @@ impl fmt::Display for MacroCall {
 }
 
 impl fmt::Display for Behavior {
-  fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {
-    todo!()
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(
+      f,
+      "behavior {} {{\n{}\n}}",
+      self.identifier,
+      Sep(&self.elements, "\n")
+    )
+  }
+}
+
+impl fmt::Display for BehaviorElement {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Self::TyAlias(ty_alias) => write!(f, "{ty_alias}"),
+      Self::Fun(fun) => write!(f, "{fun}"),
+    }
   }
 }
 
@@ -190,7 +204,7 @@ impl fmt::Display for EnumVariant {
 
     let Some(arg) = &self.arg else { return write!(f, "",); };
 
-    write!(f, ": {}", arg)
+    write!(f, ": {arg}")
   }
 }
 
@@ -210,11 +224,11 @@ impl fmt::Display for StructKind {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       Self::Init => write!(f, ";"),
-      Self::Decl(struct_decl_field) => {
-        write!(f, "{}", Sep(struct_decl_field, ",\n"))
+      Self::Decl(struct_decl_fields) => {
+        write!(f, "{}", Sep(struct_decl_fields, ",\n"))
       }
-      Self::Tuple(struct_tuple_field) => {
-        write!(f, "{}", Sep(struct_tuple_field, ","))
+      Self::Tuple(struct_tuple_fields) => {
+        write!(f, "{}", Sep(struct_tuple_fields, ","))
       }
     }
   }
@@ -233,8 +247,32 @@ impl fmt::Display for StructTupleField {
 }
 
 impl fmt::Display for Apply {
-  fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {
-    todo!()
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}", self.unsafeness)?;
+
+    match &self.kind {
+      ApplyKind::Behavior(maybe_behavior) => {
+        if let Some(behavior) = maybe_behavior {
+          write!(f, "{behavior}")?;
+        }
+
+        write!(f, "")?;
+      }
+      ApplyKind::Ty(ty) => {
+        write!(f, "{ty}")?;
+      }
+    }
+
+    write!(f, "{}", Sep(&self.elements, "\n"))
+  }
+}
+
+impl fmt::Display for ImplElement {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Self::Fun(fun) => write!(f, "{fun}"),
+      Self::TyAlias(ty_alias) => write!(f, "{ty_alias}"),
+    }
   }
 }
 
@@ -243,7 +281,7 @@ impl fmt::Display for Decl {
     write!(f, "{}", self.pattern).ok();
 
     if let Some(ty) = &self.ty {
-      write!(f, ": {}", ty).ok();
+      write!(f, ": {ty}").ok();
     } else {
       write!(f, " :=").ok();
     }

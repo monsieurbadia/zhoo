@@ -3,10 +3,12 @@ use std::thread;
 
 use pollster::block_on;
 
+/// an instance of the `run` command
 #[derive(clap::Parser)]
 pub struct Run;
 
 impl Run {
+  /// handle the `run` command
   pub async fn handle(&self) {
     use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
 
@@ -23,6 +25,7 @@ async fn run() -> Result<(), Box<(dyn Any + Send + 'static)>> {
   thread::spawn(move || block_on(running())).join()
 }
 
+/// run a `zhoo` program
 async fn running() {
   use zhoo::util::constant::{ENTRY_POINT, PATH_OUTPUT_DIRECTORY};
 

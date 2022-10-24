@@ -1,10 +1,11 @@
 use crate::cmd::settings::Backend;
 
+/// an instance of a settings for the compile command
 #[derive(Debug)]
-pub struct Settings {
+pub(crate) struct Settings {
   pub ast: bool,
   pub input: String,
-  pub no_motion: bool,
+  pub _no_motion: bool,
   pub ir: bool,
-  pub backend: Backend,
+  pub _backend: Backend,
 }

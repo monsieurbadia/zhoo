@@ -1,7 +1,8 @@
 use super::icon::Icon;
 
+/// an message enumeration
 #[derive(Debug)]
-pub enum Message {
+pub(crate) enum Message {
   Stop,
   Next(Icon, String),
   WithFrame(char),

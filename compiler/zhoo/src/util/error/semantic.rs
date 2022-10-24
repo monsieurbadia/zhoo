@@ -1,7 +1,10 @@
+//! this module is used for the semantic analysis phase of the zhoo compiler
+
 use super::report::ReportMessage;
 
 use crate::util::span::Span;
 
+/// the semantic kind enumeration
 #[derive(Debug)]
 pub enum SemanticKind {
   ArgumentsMismatch(Span, String, usize, usize, String),
@@ -16,7 +19,8 @@ pub enum SemanticKind {
   TypeMismatch(Span, String, String),
 }
 
-pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
+/// get the error messages
+pub(crate) fn semantic_report(kind: &SemanticKind) -> ReportMessage {
   use super::report::{ReportKind, REPORT_ERROR, REPORT_WARNING};
 
   use crate::util::color::Color;
@@ -45,8 +49,10 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
       vec![
         format!(
           "🤖 this function takes {expected_len} {expected_argument} but {actual_len} {actual_argument} were supplied.",
-          expected_argument = strcase::to_plural_or_singular(*expected_len, "argument"),
-          actual_argument = strcase::to_plural_or_singular(*actual_len, "argument"),
+          expected_len = expected_len.fg(Color::note()),
+          actual_len = actual_len.fg(Color::note()),
+          expected_argument = strcase::to_plural_or_singular(*expected_len, "argument").fg(Color::note()),
+          actual_argument = strcase::to_plural_or_singular(*actual_len, "argument").fg(Color::note()),
         )
       ],
       vec![
@@ -104,7 +110,7 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
       )],
       vec![format!(
         "🤖 add the following code {} to your entry file",
-        "`fun main() {}`".fg(Color::hint()),
+        "`fun main() {}`".fg(Color::note()),
       )],
       vec![],
     ),
@@ -125,7 +131,7 @@ pub fn semantic_report(kind: &SemanticKind) -> ReportMessage {
       )],
       vec![format!(
         "🤖 expected `fun()` \n\t        actual `fun({})`",
-        inputs.fg(Color::hint())
+        inputs.fg(Color::note())
       )],
       vec![],
     ),

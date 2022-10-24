@@ -7,9 +7,13 @@ use lalrpop_util::ParseError;
 
 use std::path::PathBuf;
 
+/// the regex for an identifier
 const IDENTIFIER_REGEX: &str = "r#\"[_a-zA-Z][_a-zA-Z0-9]*\"#";
+
+/// the identifier name
 const IDENTIFIER_NAME: &str = "`identifier`";
 
+/// parse a `zhoo` program
 #[inline]
 pub fn parse<P: Into<PathBuf>>(pathname: P) -> Program {
   use std::fmt::Write;

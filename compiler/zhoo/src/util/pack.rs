@@ -18,6 +18,7 @@ lazy_static! {
   pub static ref INTERVAL_ARD: Duration = std::time::Duration::from_millis(5);
 }
 
+/// create a directory and display the directory path
 pub fn make_dir(path_directory: &str) {
   slow_println("\n╭", *INTERVAL_ARU);
   if is_dir_exist(path_directory) {
@@ -35,6 +36,7 @@ pub fn make_dir(path_directory: &str) {
   }
 }
 
+/// create a file and display the file path
 pub fn make_file(path_file: &str, bytes_buf: &[u8]) {
   match File::create(path_file) {
     Ok(mut file) => match file.write_all(bytes_buf) {
@@ -47,6 +49,7 @@ pub fn make_file(path_file: &str, bytes_buf: &[u8]) {
   }
 }
 
+/// create an executable and print the output path
 pub fn make_exe(path_input: &str, path_output: &str) {
   match Command::new(GCC_PROGRAM)
     .args([path_input, "-o", path_output])
@@ -60,6 +63,7 @@ pub fn make_exe(path_input: &str, path_output: &str) {
   }
 }
 
+/// create an executable with link (for linux and windows) and print the output path
 #[cfg(not(target_os = "macos"))]
 pub fn make_exe_with_link(
   path_input: &str,
@@ -90,6 +94,7 @@ pub fn make_exe_with_link(
   }
 }
 
+/// create an executable with link (for macos) and print the output path
 #[cfg(target_os = "macos")]
 pub fn make_exe_with_link(
   path_input: &str,
@@ -118,6 +123,7 @@ pub fn make_exe_with_link(
   }
 }
 
+/// check the existence of a directory
 fn is_dir_exist(path: &str) -> bool {
   Path::new(path).is_dir()
 }

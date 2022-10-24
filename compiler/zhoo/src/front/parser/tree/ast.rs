@@ -263,6 +263,7 @@ impl TyAliasField {
 
 #[derive(Clone, Debug)]
 pub struct Behavior {
+  pub public: Public,
   pub identifier: Pattern,
   pub elements: Vec<PBox<BehaviorElement>>,
   pub span: Span,
@@ -271,11 +272,13 @@ pub struct Behavior {
 impl Behavior {
   #[inline]
   pub const fn new(
+    public: Public,
     identifier: Pattern,
     elements: Vec<PBox<BehaviorElement>>,
     span: Span,
   ) -> Self {
     Self {
+      public,
       identifier,
       elements,
       span,

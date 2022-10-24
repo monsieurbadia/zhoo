@@ -58,7 +58,7 @@ StmtBehavior: PBox<Stmt> = {
   <lo:@L> <behavior:Behavior> <hi:@R> => pbox(Stmt::new(StmtKind::Behavior(behavior), Span::new(lo, hi))),
 };
 Behavior: PBox<Behavior> = {
-  <lo:@L> "behavior" <pattern:Pattern> "{" <elements:BehaviorElement*> "}" <hi:@R> => pbox(Behavior::new(pattern, elements, Span::new(lo, hi))),
+  <lo:@L> <public:public> "behavior" <pattern:Pattern> "{" <elements:BehaviorElement*> "}" <hi:@R> => pbox(Behavior::new(public, pattern, elements, Span::new(lo, hi))),
 };
 BehaviorElement: PBox<BehaviorElement> = {
   <lo:@L> <fun:Fun> <hi:@R> => pbox(BehaviorElement::Fun(fun)),

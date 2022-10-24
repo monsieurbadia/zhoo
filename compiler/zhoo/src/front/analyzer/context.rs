@@ -6,7 +6,7 @@ use crate::front::parser::tree::ty::Ty;
 use crate::front::parser::tree::PBox;
 
 #[derive(Clone, Debug)]
-pub struct Context<'a> {
+pub(crate) struct Context<'a> {
   pub program: &'a Program,
   pub scope_map: ScopeMap,
   pub return_ty: PBox<Ty>,

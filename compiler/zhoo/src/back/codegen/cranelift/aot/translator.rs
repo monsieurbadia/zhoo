@@ -1,5 +1,5 @@
 use crate::back::codegen::cranelift::interface::{
-  CompiledFunction, DataContextBuilder, VariableBuilder,
+  CompiledFunction, DataBuilder, VariableBuilder,
 };
 
 use crate::front::parser::tree::ast::{
@@ -32,7 +32,8 @@ use fnv::FnvHashMap;
 //
 // - [ ] string
 
-pub struct Translator<'a> {
+/// an instance of a translator
+pub(crate) struct Translator<'a> {
   pub builder: FunctionBuilder<'a>,
   pub module: &'a mut ObjectModule,
   pub funs: &'a FnvHashMap<String, CompiledFunction>,
@@ -42,7 +43,7 @@ pub struct Translator<'a> {
   pub ty: types::Type,
   pub blocks: &'a mut Vec<CBlock>,
   pub variable_builder: &'a mut VariableBuilder,
-  pub data_context_builder: &'a mut DataContextBuilder,
+  pub data_builder: &'a mut DataBuilder,
 }
 
 impl<'a> Translator<'a> {
@@ -71,10 +72,11 @@ impl<'a> Translator<'a> {
   fn translate_decl(&mut self, decl: &Decl) -> Value {
     let value = self.translate_expr(&decl.value);
 
-    let var =
-      self
-        .variable_builder
-        .create_var(&mut self.builder, value, types::I64);
+    let var = self.variable_builder.create_variable(
+      &mut self.builder,
+      value,
+      types::I64,
+    );
 
     self.vars.insert(decl.pattern.to_string(), var);
 
@@ -176,7 +178,7 @@ impl<'a> Translator<'a> {
 
   // fixme #1
   fn translate_expr_lit_str(&mut self, data: &String) -> Value {
-    self.data_context_builder.create_data(
+    self.data_builder.create_data(
       &mut self.builder,
       self.module,
       self.globals,

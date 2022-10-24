@@ -1,5 +1,6 @@
 pub use super::spinner::{Spinner, Spinners, SPINNERS, SPINNER_INDEX};
 
+/// an instance of a frame
 #[derive(Debug, Clone)]
 pub struct Frame {
   index: usize,
@@ -7,6 +8,7 @@ pub struct Frame {
 }
 
 impl Frame {
+  /// create an instance of a frame
   pub fn new(spinner: Spinner) -> Self {
     Self::new_with_frames(
       SPINNERS
@@ -16,6 +18,7 @@ impl Frame {
     )
   }
 
+  /// create an instance of a frame
   fn new_with_frames(frames: Spinners) -> Self {
     Self {
       index: SPINNER_INDEX,
@@ -23,6 +26,7 @@ impl Frame {
     }
   }
 
+  /// get the next character frame
   pub async fn next(&mut self) -> char {
     match self.frames.get(self.index) {
       Some(character) => {

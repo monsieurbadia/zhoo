@@ -1,3 +1,5 @@
+//! this module is used for the code generation phase of the zhoo compiler
+
 use super::report::ReportMessage;
 
 use crate::util::span::Span;
@@ -7,6 +9,7 @@ use crate::util::span::Span;
 // normally, there should be no similar errors in the
 // type checking phase, is right?
 
+/// the generate kind enumeration
 #[derive(Debug)]
 pub enum GenerateKind {
   CallFunctionNotFound(Span, String),
@@ -15,7 +18,8 @@ pub enum GenerateKind {
   ArgumentsMismatch(Span),
 }
 
-pub fn generate_report(kind: &GenerateKind) -> ReportMessage {
+/// get the error messages
+pub(crate) fn generate_report(kind: &GenerateKind) -> ReportMessage {
   use super::report::{ReportKind, REPORT_ERROR};
 
   use crate::util::color::Color;

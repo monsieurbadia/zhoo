@@ -13,7 +13,7 @@ use crate::util::strcase;
 use crate::util::strcase::StrCase;
 
 #[inline]
-pub fn check(program: &Program) -> Result<()> {
+pub(crate) fn check(program: &Program) -> Result<()> {
   let context = Context::new(program);
 
   for stmt in &context.program.stmts {

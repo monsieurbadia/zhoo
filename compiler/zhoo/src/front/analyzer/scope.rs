@@ -44,7 +44,7 @@ impl Scope {
 }
 
 #[derive(Clone, Debug)]
-pub struct ScopeMap {
+pub(crate) struct ScopeMap {
   maps: Vec<Scope>,
 }
 

@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
 use std::ops::Range;
 
+/// an instance of span
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Span {
   pub lo: u32,
@@ -8,16 +9,19 @@ pub struct Span {
 }
 
 impl Span {
-  pub const ZERO: Self = Self::new(0, 0);
+  /// a zero span
+  pub(crate) const ZERO: Self = Self::new(0, 0);
 
-  pub const fn new(lo: usize, hi: usize) -> Self {
+  /// create an instance of span
+  pub(crate) const fn new(lo: usize, hi: usize) -> Self {
     Self {
       lo: lo as u32,
       hi: hi as u32,
     }
   }
 
-  pub fn merge(a: &Span, b: &Span) -> Span {
+  /// merge spans into one span
+  pub(crate) fn merge(a: &Span, b: &Span) -> Span {
     use std::cmp::{max, min};
 
     let lo = min(a.lo, b.lo);
@@ -33,6 +37,7 @@ impl From<Span> for Range<usize> {
   }
 }
 
+/// an instance of spanned
 #[derive(Copy, Clone, Debug, Eq)]
 pub struct Spanned<T> {
   pub span: Span,
@@ -61,7 +66,8 @@ impl<T: PartialEq> PartialEq for Spanned<T> {
 }
 
 impl<T> Spanned<T> {
-  pub const fn new(node: T, span: Span) -> Self {
+  /// create an instance of spanned
+  pub(crate) const fn new(node: T, span: Span) -> Self {
     Self { node, span }
   }
 }

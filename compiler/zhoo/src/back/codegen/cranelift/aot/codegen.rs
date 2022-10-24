@@ -3,7 +3,7 @@ use super::translator::Translator;
 use crate::front::analyzer::builtins::{io_builtins, sys_builtins, Builtin};
 
 use crate::back::codegen::cranelift::interface::{
-  CompiledFunction, DataContextBuilder, VariableBuilder,
+  CompiledFunction, DataBuilder, VariableBuilder,
 };
 
 use crate::front::parser::tree::ast::{
@@ -13,7 +13,8 @@ use crate::front::parser::tree::ast::{
 use crate::front::parser::tree::ty::AsTy;
 
 use crate::util::constant::{
-  ENTRY_POINT, PATH_LIBRARY, PATH_LIBRARY_CORE, PATH_OUTPUT_DIRECTORY,
+  COMPILER_NAME, ENTRY_POINT, PATH_LIBRARY, PATH_LIBRARY_CORE,
+  PATH_OUTPUT_DIRECTORY,
 };
 
 use crate::util::pack;
@@ -29,13 +30,13 @@ use fnv::FnvHashMap;
 
 pub type BuildResult = Result<Box<dyn FnOnce()>, String>;
 
-const COMPILER_NAME: &str = "zhoo";
-
+/// generate machine code of a `zhoo` program
 #[inline]
 pub fn generate(program: &Program) -> Codegen {
   Codegen::new(program).generate()
 }
 
+/// an instance of a codegen
 pub struct Codegen<'a> {
   function_builder_context: FunctionBuilderContext,
   module: ObjectModule,
@@ -45,11 +46,12 @@ pub struct Codegen<'a> {
   ir: String,
   funs: FnvHashMap<String, CompiledFunction>,
   globals: FnvHashMap<String, GlobalValue>,
-  data_context_builder: DataContextBuilder,
+  data_builder: DataBuilder,
   variable_builder: VariableBuilder,
 }
 
 impl<'a> Codegen<'a> {
+  /// create an instance of codegen
   #[inline]
   fn new(program: &'a Program) -> Self {
     let mut flag_builder = settings::builder();
@@ -80,7 +82,7 @@ impl<'a> Codegen<'a> {
       ir: String::new(),
       funs: FnvHashMap::default(),
       globals: FnvHashMap::default(),
-      data_context_builder: DataContextBuilder::default(),
+      data_builder: DataBuilder::default(),
       variable_builder: VariableBuilder::default(),
     };
 
@@ -145,7 +147,7 @@ impl<'a> Codegen<'a> {
       let variable =
         self
           .variable_builder
-          .create_var(&mut builder, value, types::I64);
+          .create_variable(&mut builder, value, types::I64);
 
       vars.insert(input.pattern.to_string(), variable);
     }
@@ -163,7 +165,7 @@ impl<'a> Codegen<'a> {
       program: self.program,
       ty: types::I64,
       blocks: &mut self.blocks,
-      data_context_builder: &mut self.data_context_builder,
+      data_builder: &mut self.data_builder,
       variable_builder: &mut self.variable_builder,
     };
 
@@ -172,7 +174,7 @@ impl<'a> Codegen<'a> {
       Err(_) => {
         translator.builder.finalize();
         self.funs.remove(&func_name);
-        return; // todo: error
+        return; // todo (?): error
       }
     };
 

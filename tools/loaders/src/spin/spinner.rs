@@ -3,9 +3,11 @@ use lazy_static::lazy_static;
 
 pub type Spinners = Vec<char>;
 
+/// the default index spinner
 pub const SPINNER_INDEX: usize = 0;
 
 lazy_static! {
+  /// a dictionary of spiders
   pub static ref SPINNERS: FnvHashMap<Spinner, Spinners> = {
     let mut spinners = FnvHashMap::default();
 
@@ -19,6 +21,7 @@ lazy_static! {
   };
 }
 
+/// an spinner enumeration
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub enum Spinner {
   Arc,
@@ -29,6 +32,7 @@ pub enum Spinner {
 }
 
 impl Spinner {
+  /// conversion of a spinner to a vector of frames
   pub fn to_vec(&self) -> Spinners {
     match self {
       Self::Arc => vec!['◜', '◠', '◝', '◞', '◡', '◟'],

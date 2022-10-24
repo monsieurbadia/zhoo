@@ -1,5 +1,6 @@
 pub mod compile;
 
+/// a backend enumeration
 #[derive(Debug)]
 pub enum Backend {
   Cranelift,

@@ -1,3 +1,5 @@
+//! this module contains common utilities modules for the `zhoo` compiler
+
 pub mod color;
 pub mod constant;
 pub mod error;

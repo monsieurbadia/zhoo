@@ -12,12 +12,16 @@ use crate::util::error::{Report, Result, SemanticKind};
 use crate::util::span::Span;
 
 #[inline]
-pub fn check(program: &Program) -> Result<()> {
+pub(crate) fn check(program: &Program) -> Result<()> {
   let mut context = Context::new(program);
 
   for stmt in &context.program.stmts {
     match check_stmt(&mut context, stmt) {
-      Ok(_) => {}
+      Ok(ty) => {
+        println!();
+        println!("{ty}");
+        println!();
+      }
       Err(report) => context.program.reporter.add_report(report),
     };
   }

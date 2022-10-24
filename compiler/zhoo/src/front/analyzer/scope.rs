@@ -1,12 +1,12 @@
 use crate::front::parser::tree::ty::Ty;
 use crate::front::parser::tree::PBox;
 
-use std::collections::HashMap;
+use fnv::FnvHashMap;
 
 #[derive(Clone, Debug, Default)]
 struct Scope {
-  decls: HashMap<String, PBox<Ty>>,
-  funs: HashMap<String, (Vec<PBox<Ty>>, PBox<Ty>)>,
+  decls: FnvHashMap<String, PBox<Ty>>,
+  funs: FnvHashMap<String, (Vec<PBox<Ty>>, PBox<Ty>)>,
 }
 
 impl Scope {

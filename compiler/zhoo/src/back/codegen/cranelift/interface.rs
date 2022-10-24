@@ -5,8 +5,7 @@ use codegen::ir::GlobalValue;
 use cranelift::prelude::*;
 use cranelift_module::{DataContext, FuncId, Linkage, Module};
 use cranelift_object::ObjectModule;
-
-use std::collections::HashMap;
+use fnv::FnvHashMap;
 
 pub struct CompiledFunction {
   pub id: FuncId,
@@ -58,7 +57,7 @@ impl DataContextBuilder {
     &mut self,
     builder: &mut FunctionBuilder,
     module: &mut ObjectModule,
-    globals: &mut HashMap<String, GlobalValue>,
+    globals: &mut FnvHashMap<String, GlobalValue>,
     data: &String,
   ) -> Value {
     let data_id = match globals.get(data) {

@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use fnv::FnvHashMap;
 use lazy_static::lazy_static;
 
 pub type Spinners = Vec<char>;
@@ -7,8 +6,8 @@ pub type Spinners = Vec<char>;
 pub const SPINNER_INDEX: usize = 0;
 
 lazy_static! {
-  pub static ref SPINNERS: HashMap<Spinner, Spinners> = {
-    let mut spinners = HashMap::new();
+  pub static ref SPINNERS: FnvHashMap<Spinner, Spinners> = {
+    let mut spinners = FnvHashMap::default();
 
     spinners.insert(Spinner::Arc, Spinner::Arc.to_vec());
     spinners.insert(Spinner::Arrow, Spinner::Arrow.to_vec());

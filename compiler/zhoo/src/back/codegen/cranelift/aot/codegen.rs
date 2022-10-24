@@ -25,8 +25,7 @@ use cranelift_codegen::{settings, Context};
 use cranelift_module::{FuncId, Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use cranelift_preopt::optimize;
-
-use std::collections::HashMap;
+use fnv::FnvHashMap;
 
 pub type BuildResult = Result<Box<dyn FnOnce()>, String>;
 
@@ -44,8 +43,8 @@ pub struct Codegen<'a> {
   blocks: Vec<CBlock>,
   context: Context,
   ir: String,
-  funs: HashMap<String, CompiledFunction>,
-  globals: HashMap<String, GlobalValue>,
+  funs: FnvHashMap<String, CompiledFunction>,
+  globals: FnvHashMap<String, GlobalValue>,
   data_context_builder: DataContextBuilder,
   variable_builder: VariableBuilder,
 }
@@ -79,8 +78,8 @@ impl<'a> Codegen<'a> {
       program,
       blocks: vec![],
       ir: String::new(),
-      funs: HashMap::new(),
-      globals: HashMap::new(),
+      funs: FnvHashMap::default(),
+      globals: FnvHashMap::default(),
       data_context_builder: DataContextBuilder::default(),
       variable_builder: VariableBuilder::default(),
     };
@@ -138,7 +137,7 @@ impl<'a> Codegen<'a> {
     builder.switch_to_block(entry_block);
     builder.seal_block(entry_block);
 
-    let mut vars = HashMap::new();
+    let mut vars = FnvHashMap::default();
 
     for (i, input) in params.iter().enumerate() {
       let value = builder.block_params(entry_block)[i];

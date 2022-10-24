@@ -19,14 +19,14 @@ use cranelift::prelude::{
 use cranelift_codegen::ir::GlobalValue;
 use cranelift_module::Module;
 use cranelift_object::ObjectModule;
-
-use std::collections::HashMap;
+use fnv::FnvHashMap;
 
 // todo
 //
 // - [ ] array
 // - [ ] array access
 // - [ ] decls
+// - [ ] for
 
 // fixme #1
 //
@@ -35,9 +35,9 @@ use std::collections::HashMap;
 pub struct Translator<'a> {
   pub builder: FunctionBuilder<'a>,
   pub module: &'a mut ObjectModule,
-  pub funs: &'a HashMap<String, CompiledFunction>,
-  pub globals: &'a mut HashMap<String, GlobalValue>,
-  pub vars: HashMap<String, Variable>,
+  pub funs: &'a FnvHashMap<String, CompiledFunction>,
+  pub globals: &'a mut FnvHashMap<String, GlobalValue>,
+  pub vars: FnvHashMap<String, Variable>,
   pub program: &'a Program,
   pub ty: types::Type,
   pub blocks: &'a mut Vec<CBlock>,
@@ -206,7 +206,6 @@ impl<'a> Translator<'a> {
     match self.funs.get(&callee.to_string()) {
       Some(func) => {
         if func.input_len != inputs.len() {
-          // todo: not finished yet
           self.program.reporter.add_report(Report::Generate(
             GenerateKind::ArgumentsMismatch(callee.span),
           ))
@@ -465,7 +464,7 @@ impl<'a> Translator<'a> {
 
         new_rhs
       }
-      _ => unreachable!(), // fixme
+      _ => unreachable!(),
     }
   }
 

@@ -657,6 +657,14 @@ Lit: PBox<Lit> = {
   LitIntBin,
   LitIntOct,
   LitIntHex,
+  LitParser,
+};
+
+LitParser: PBox<Lit> = {
+  <lo:@L> "b#" <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:b}"), 2).unwrap()), Span::new(lo, hi))),
+  <lo:@L> "o#" <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:o}"), 8).unwrap()), Span::new(lo, hi))),
+  <lo:@L> "h#" <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:x}"), 16).unwrap()), Span::new(lo, hi))),
+  <lo:@L> "d#" <real:LiteralReal> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str(&real.to_string()).unwrap()), Span::new(lo, hi))),
 };
 
 LitBool: PBox<Lit> = <lo:@L> <boolean:LiteralBool> <hi:@R> => pbox(Lit::new(LitKind::Bool(boolean), Span::new(lo, hi)));
@@ -673,11 +681,11 @@ LiteralBool: bool = {
 };
 
 LiteralStr: String = <s:r#""(?:[^"\\]|\\.)*""#> => s[1..(s.len() - 1)].to_string();
-LiteralReal: f64 = <num:r"[0-9_]\.[0-9_]+"> => f64::from_str(num).unwrap();
-LiteralIntBin: i64 = <num:r"0b[0-1_]+"> => i64::from_str_radix(num.replace('_', "").trim_start_matches("0b"), 2).unwrap();
-LiteralIntOct: i64 = <num:r"0o[0-7_]+"> => i64::from_str_radix(num.replace('_', "").trim_start_matches("0o"), 8).unwrap();
-LiteralIntHex: i64 = <num:r"0x[0-9a-fA-F_]+"> => i64::from_str_radix(num.replace('_', "").trim_start_matches("0x"), 16).unwrap();
-LiteralInt: i64 = <num:r"[0-9][0-9_]*"> => i64::from_str(&num.replace('_', "")).unwrap();
+LiteralReal: f64 = <real:r"[0-9_]\.[0-9_]+"> => f64::from_str(&real.replace('_', "")).unwrap();
+LiteralIntBin: i64 = <bin:r"0b[0-1_]+"> => i64::from_str_radix(bin.replace('_', "").trim_start_matches("0b"), 2).unwrap();
+LiteralIntOct: i64 = <oct:r"0o[0-7_]+"> => i64::from_str_radix(oct.replace('_', "").trim_start_matches("0o"), 8).unwrap();
+LiteralIntHex: i64 = <hex:r"0x[0-9a-fA-F_]+"> => i64::from_str_radix(hex.replace('_', "").trim_start_matches("0x"), 16).unwrap();
+LiteralInt: i64 = <int:r"[0-9][0-9_]*"> => i64::from_str(&int.replace('_', "")).unwrap();
 
 public: Public = {
   <lo:@L> "pub" <hi:@R> => Public::Yes(Span::new(lo, hi)),

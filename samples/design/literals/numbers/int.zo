@@ -1,6 +1,18 @@
 val BIN: int = 0b11110000;  -- binary
-val OCT: int = 0o77;       -- octal
+val OCT: int = 0o77;        -- octal
 val HEX: int = 0xfff_fff;   -- hexadecimal
 val DEC: int = 1;           -- decimal
 
-fun main() {}
+fun main() {
+  -- parse to binary number
+  imu bina : int = b#30; -- 11110
+
+  -- parse to octal number
+  imu octa : int = o#75; -- 113
+
+  -- parse to hexadecimal number
+  imu hexa : int = h#76; -- 4c
+
+  -- parse to integer number
+  imu deci : int = d#25.0; -- 25
+}

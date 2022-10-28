@@ -1,8 +1,6 @@
 use std::any::Any;
 use std::thread;
 
-use pollster::block_on;
-
 /// an instance of the `run` command
 #[derive(clap::Parser)]
 pub struct Run;
@@ -22,12 +20,12 @@ impl Run {
 }
 
 async fn run() -> Result<(), Box<(dyn Any + Send + 'static)>> {
-  thread::spawn(move || block_on(running())).join()
+  thread::spawn(running).join()
 }
 
 /// run a `zhoo` program
-async fn running() {
-  use zhoo::util::constant::{ENTRY_POINT, PATH_OUTPUT_DIRECTORY};
+fn running() {
+  use zhoo_util::constant::{ENTRY_POINT, PATH_OUTPUT_DIRECTORY};
 
   use std::process::Command;
   use std::str;

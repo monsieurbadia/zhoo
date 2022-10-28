@@ -5,8 +5,6 @@ use crate::cmd::handler::{
 
 use crate::cmd::settings::compile::Settings;
 
-use pollster::block_on;
-
 use std::any::Any;
 use std::thread;
 
@@ -56,15 +54,15 @@ impl Compile {
 async fn compile(
   settings: Settings,
 ) -> Result<(), Box<(dyn Any + Send + 'static)>> {
-  thread::spawn(move || block_on(compiling(settings))).join()
+  thread::spawn(move || compiling(settings)).join()
 }
 
 /// compile a `zhoo` program
-async fn compiling(settings: Settings) {
-  use zhoo::back::codegen;
-  use zhoo::front::{analyzer, parser};
-
+fn compiling(settings: Settings) {
   use loaders::spin;
+  use zhoo_analyzer::analyzer;
+  use zhoo_codegen::codegen;
+  use zhoo_parser::parser;
 
   use std::time::Duration;
 
@@ -108,7 +106,7 @@ async fn compiling(settings: Settings) {
 
   let codegen = codegen::cranelift::aot::generate(&program);
 
-  match codegen.build(settings.ir).await {
+  match codegen.build(settings.ir) {
     Ok(done) => {
       spinner
         .with_info(format!("     {} `mode` | `backend`", &*COMPILATION_DONE)); // todo #2

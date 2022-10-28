@@ -1080,8 +1080,22 @@ checksum = "09041cd90cf85f7f8b2df60c646f853b7f535ce68f85244eb6731cf89fa498ec"
 name = "zhoo"
 version = "0.0.0"
 dependencies = [
- "Inflector",
- "ariadne",
+ "zhoo-driver",
+]
+
+[[package]]
+name = "zhoo-analyzer"
+version = "0.0.0"
+dependencies = [
+ "fnv",
+ "zhoo-parser",
+ "zhoo-util",
+]
+
+[[package]]
+name = "zhoo-codegen"
+version = "0.0.0"
+dependencies = [
  "cranelift",
  "cranelift-codegen",
  "cranelift-jit",
@@ -1090,11 +1104,10 @@ dependencies = [
  "cranelift-object",
  "cranelift-preopt",
  "fnv",
- "lalrpop",
- "lalrpop-util",
  "lazy_static",
- "regex",
- "slowprint",
+ "zhoo-analyzer",
+ "zhoo-parser",
+ "zhoo-util",
 ]
 
 [[package]]
@@ -1111,5 +1124,28 @@ dependencies = [
  "loaders",
  "pollster",
  "qute",
- "zhoo",
+ "zhoo-analyzer",
+ "zhoo-codegen",
+ "zhoo-parser",
+ "zhoo-util",
+]
+
+[[package]]
+name = "zhoo-parser"
+version = "0.0.0"
+dependencies = [
+ "lalrpop",
+ "lalrpop-util",
+ "regex",
+ "zhoo-util",
+]
+
+[[package]]
+name = "zhoo-util"
+version = "0.0.0"
+dependencies = [
+ "Inflector",
+ "ariadne",
+ "lazy_static",
+ "slowprint",
 ]

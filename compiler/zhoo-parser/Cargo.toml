@@ -3,10 +3,18 @@ authors = ["monsieurbadia <monsieurbadia@gmail.com>"]
 description = "..."
 edition = "2021"
 license = "MIT"
-name = "zhoo"
+name = "zhoo-parser"
 readme = "README.md"
 repository = "https://github.com/monsieurbadia/zhoo"
 version.workspace = true
 
+[lib]
+doctest = false
+
+[build-dependencies]
+lalrpop = "0.19.8"
+
 [dependencies]
-zhoo-driver = {path = "../zhoo-driver"}
+lalrpop-util = {version = "0.19.8", features = ["lexer"]}
+regex = "1"
+zhoo-util = {path = "../zhoo-util"}

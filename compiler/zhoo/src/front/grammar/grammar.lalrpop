@@ -369,7 +369,7 @@ TyFun: PBox<Ty> = {
   <lo:@L> "Fn" "(" <tys:Comma<Ty>> ")" ":" <ty:Ty> <hi:@R> => pbox(Ty::new(TyKind::Fn(tys, ty), Span::new(lo, hi))),
 };
 TyArray: PBox<Ty> = {
-  <lo:@L> <indexed:TyPrim> "[" <size:LiteralInt?> "]" <hi:@R> => pbox(Ty::new(TyKind::Array(indexed, size), Span::new(lo, hi))),
+  <lo:@L> <indexed:TyPrim> "[" <size:LiteralIntDec?> "]" <hi:@R> => pbox(Ty::new(TyKind::Array(indexed, size), Span::new(lo, hi))),
 };
 TyTuple: PBox<Ty> = {
   <lo:@L> "(" <tys:Comma<TyPrim>> ")" <hi:@R> => pbox(Ty::new(TyKind::Tuple(tys), Span::new(lo, hi))),
@@ -647,7 +647,7 @@ Literal: PBox<Expr> = {
 };
 
 LiteralInteger: PBox<Expr> = {
-  <lo:@L> <int:LitInt> <hi:@R> => pbox(Expr::new(ExprKind::Lit(int), Span::new(lo, hi))),
+  <lo:@L> <int:LitIntDec> <hi:@R> => pbox(Expr::new(ExprKind::Lit(int), Span::new(lo, hi))),
 };
 
 Lit: PBox<Lit> = {
@@ -661,10 +661,10 @@ Lit: PBox<Lit> = {
 };
 
 LitParser: PBox<Lit> = {
-  <lo:@L> "b#" <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:b}"), 2).unwrap()), Span::new(lo, hi))),
-  <lo:@L> "o#" <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:o}"), 8).unwrap()), Span::new(lo, hi))),
-  <lo:@L> "h#" <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:x}"), 16).unwrap()), Span::new(lo, hi))),
-  <lo:@L> "d#" <real:LiteralReal> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str(&real.to_string()).unwrap()), Span::new(lo, hi))),
+  <lo:@L> BINARY_PARSER <int:LiteralIntDec> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:b}"), 2).unwrap()), Span::new(lo, hi))),
+  <lo:@L> OCTAL_PARSER <int:LiteralIntDec> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:o}"), 8).unwrap()), Span::new(lo, hi))),
+  <lo:@L> HEXADECIMAL_PARSER <int:LiteralIntDec> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str_radix(&format!("{int:x}"), 16).unwrap()), Span::new(lo, hi))),
+  <lo:@L> DECIMAL_PARSER <real:LiteralReal> <hi:@R> => pbox(Lit::new(LitKind::Int(i64::from_str(&real.to_string()).unwrap()), Span::new(lo, hi))),
 };
 
 LitBool: PBox<Lit> = <lo:@L> <boolean:LiteralBool> <hi:@R> => pbox(Lit::new(LitKind::Bool(boolean), Span::new(lo, hi)));
@@ -673,19 +673,19 @@ LitReal: PBox<Lit> = <lo:@L> <real:LiteralReal> <hi:@R> => pbox(Lit::new(LitKind
 LitIntBin: PBox<Lit> = <lo:@L> <bin:LiteralIntBin> <hi:@R> => pbox(Lit::new(LitKind::Int(bin), Span::new(lo, hi)));
 LitIntOct: PBox<Lit> = <lo:@L> <oct:LiteralIntOct> <hi:@R> => pbox(Lit::new(LitKind::Int(oct), Span::new(lo, hi)));
 LitIntHex: PBox<Lit> = <lo:@L> <hex:LiteralIntHex> <hi:@R> => pbox(Lit::new(LitKind::Int(hex), Span::new(lo, hi)));
-LitInt: PBox<Lit> = <lo:@L> <int:LiteralInt> <hi:@R> => pbox(Lit::new(LitKind::Int(int), Span::new(lo, hi)));
+LitIntDec: PBox<Lit> = <lo:@L> <int:LiteralIntDec> <hi:@R> => pbox(Lit::new(LitKind::Int(int), Span::new(lo, hi)));
 
 LiteralBool: bool = {
   "true" => true,
   "false" => false,
 };
 
-LiteralStr: String = <s:r#""(?:[^"\\]|\\.)*""#> => s[1..(s.len() - 1)].to_string();
-LiteralReal: f64 = <real:r"[0-9_]\.[0-9_]+"> => f64::from_str(&real.replace('_', "")).unwrap();
-LiteralIntBin: i64 = <bin:r"0b[0-1_]+"> => i64::from_str_radix(bin.replace('_', "").trim_start_matches("0b"), 2).unwrap();
-LiteralIntOct: i64 = <oct:r"0o[0-7_]+"> => i64::from_str_radix(oct.replace('_', "").trim_start_matches("0o"), 8).unwrap();
-LiteralIntHex: i64 = <hex:r"0x[0-9a-fA-F_]+"> => i64::from_str_radix(hex.replace('_', "").trim_start_matches("0x"), 16).unwrap();
-LiteralInt: i64 = <int:r"[0-9][0-9_]*"> => i64::from_str(&int.replace('_', "")).unwrap();
+LiteralStr: String = <s:STRING> => s[1..(s.len() - 1)].to_string();
+LiteralReal: f64 = <real:REAL> => f64::from_str(&real.replace('_', "")).unwrap();
+LiteralIntBin: i64 = <bin:INTEGER_BINARY> => i64::from_str_radix(bin.replace('_', "").trim_start_matches("0b"), 2).unwrap();
+LiteralIntOct: i64 = <oct:INTEGER_OCTAL> => i64::from_str_radix(oct.replace('_', "").trim_start_matches("0o"), 8).unwrap();
+LiteralIntHex: i64 = <hex:INTEGER_HEXADECIMAL> => i64::from_str_radix(hex.replace('_', "").trim_start_matches("0x"), 16).unwrap();
+LiteralIntDec: i64 = <int:INTEGER_DECIMAL> => i64::from_str(&int.replace('_', "")).unwrap();
 
 public: Public = {
   <lo:@L> "pub" <hi:@R> => Public::Yes(Span::new(lo, hi)),
@@ -730,6 +730,16 @@ Sep<T, S>: Vec<T> = {
 };
 
 match {
+  "b#" => BINARY_PARSER,
+  "o#" => OCTAL_PARSER,
+  "x#" => HEXADECIMAL_PARSER,
+  "d#" => DECIMAL_PARSER,
+  r"[0-9_]\.[0-9_]+" => REAL,
+  r"0b[0-1_]+" => INTEGER_BINARY,
+  r"0o[0-7_]+" => INTEGER_OCTAL,
+  r"0x[0-9a-fA-F_]+" => INTEGER_HEXADECIMAL,
+  r"[0-9][0-9_]*" => INTEGER_DECIMAL,
+  r#""(?:[^"\\]|\\.)*""# => STRING,
   r"\s*" => {},
   // line comments
   r"--[^\n\r]*[\n\r]*" => {},

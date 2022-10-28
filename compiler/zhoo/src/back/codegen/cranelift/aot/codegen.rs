@@ -232,7 +232,7 @@ impl<'a> Codegen<'a> {
         if let ReturnTy::Ty(_ty) = &prototype.output {
           signature.returns.push(AbiParam::new(types::I64));
         } else {
-          signature.returns.push(AbiParam::new(types::I64));
+          //signature.returns.push(AbiParam::new(types::I64));
         }
 
         let id =
@@ -320,4 +320,23 @@ fn register_builtin(codegen: &mut Codegen) {
   for builtin in io_builtins() {
     codegen.register_builtin(builtin);
   }
+}
+
+// https://github.com/bytecodealliance/wasmtime/blob/main/cranelift/object/tests/basic.rs#L179-L185
+fn _register_builtin_c(
+  module: &mut ObjectModule,
+  builder: &mut FunctionBuilder,
+) {
+  let int_type = module.target_config().pointer_type();
+
+  let mut signature = module.make_signature();
+
+  signature.params.push(AbiParam::new(int_type));
+  signature.returns.push(AbiParam::new(int_type));
+
+  let callee = module
+    .declare_function("malloc", Linkage::Import, &signature)
+    .expect("declare malloc function");
+
+  let _local_callee = module.declare_func_in_func(callee, &mut builder.func);
 }

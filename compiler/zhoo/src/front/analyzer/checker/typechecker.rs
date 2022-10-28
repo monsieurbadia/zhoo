@@ -17,11 +17,7 @@ pub(crate) fn check(program: &Program) -> Result<()> {
 
   for stmt in &context.program.stmts {
     match check_stmt(&mut context, stmt) {
-      Ok(ty) => {
-        println!();
-        println!("{ty}");
-        println!();
-      }
+      Ok(_ty) => {}
       Err(report) => context.program.reporter.add_report(report),
     };
   }
@@ -651,17 +647,16 @@ fn check_expr_array(
   span: Span,
   elements: &[PBox<Expr>],
 ) -> Result<PBox<Ty>> {
-  let element_tys = elements
+  let mut element_tys = elements
     .iter()
     .map(|element| check_expr(context, element).unwrap())
     .collect::<Vec<PBox<Ty>>>();
 
-  if element_tys.is_empty() {
+  let first_ty = if let Some(last_ty) = element_tys.pop() {
+    last_ty
+  } else {
     return Ok(Ty::with_array(Ty::INFER.into(), None, span).into());
-  }
-
-  let mut element_tys = element_tys.into_iter();
-  let first_ty = element_tys.next().unwrap(); // we can unwrap here because we know that we have an element
+  };
 
   for ty in element_tys {
     expect_equality(context, &first_ty, &ty);

@@ -1,0 +1,7 @@
+fun main() {
+  imu x: int = 1;
+  imu x: int = 2;
+  imu x: int = x + 3;
+
+  printiln(x); -- returns `5`
+}

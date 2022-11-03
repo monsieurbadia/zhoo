@@ -544,9 +544,9 @@ impl<'a> Translator<'a> {
       types::I64,
     );
 
-    let variable_shadowed = self.vars.remove(&decl.pattern.to_string());
-
     self.vars.insert(decl.pattern.to_string(), variable);
+
+    let variable_shadowed = self.vars.remove(&decl.pattern.to_string());
 
     if let Some(variable) = variable_shadowed {
       self.vars.insert(decl.pattern.to_string(), variable);

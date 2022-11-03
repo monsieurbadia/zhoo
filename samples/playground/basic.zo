@@ -4,6 +4,4 @@ fun main() {
     printiln(x);
     x += 1;
   }
-
-  println("okokokokokk");
 }

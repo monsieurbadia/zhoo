@@ -1,4 +1,4 @@
-use fnv::FnvHashMap;
+use fxhash::FxHashMap;
 use lazy_static::lazy_static;
 
 pub type Spinners = Vec<char>;
@@ -7,8 +7,8 @@ pub type Spinners = Vec<char>;
 pub const SPINNER_INDEX: usize = 0;
 
 lazy_static! {
-  pub static ref SPINNERS: FnvHashMap<Spinner, Spinners> = {
-    let mut spinners = FnvHashMap::default();
+  pub static ref SPINNERS: FxHashMap<Spinner, Spinners> = {
+    let mut spinners = FxHashMap::default();
 
     spinners.insert(Spinner::Arc, Spinner::Arc.to_vec());
     spinners.insert(Spinner::Arrow, Spinner::Arrow.to_vec());

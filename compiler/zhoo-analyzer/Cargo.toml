@@ -12,6 +12,8 @@ version.workspace = true
 doctest = false
 
 [dependencies]
-fnv = "1.0.7"
-zhoo-parser = {path = "../zhoo-parser"}
-zhoo-util = {path = "../zhoo-util"}
+fxhash = "0.2.1"
+zhoo-ast = {path = "../zhoo-ast"}
+zhoo-errors = {path = "../zhoo-errors"}
+zhoo-helper = {path = "../zhoo-helper"}
+zhoo-span = {path = "../zhoo-span"}

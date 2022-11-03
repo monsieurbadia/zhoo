@@ -1087,13 +1087,24 @@ dependencies = [
 name = "zhoo-analyzer"
 version = "0.0.0"
 dependencies = [
- "fnv",
- "zhoo-parser",
- "zhoo-util",
+ "fxhash",
+ "zhoo-ast",
+ "zhoo-errors",
+ "zhoo-helper",
+ "zhoo-span",
 ]
 
 [[package]]
-name = "zhoo-codegen"
+name = "zhoo-ast"
+version = "0.0.0"
+dependencies = [
+ "zhoo-errors",
+ "zhoo-helper",
+ "zhoo-span",
+]
+
+[[package]]
+name = "zhoo-codegen-cranelift"
 version = "0.0.0"
 dependencies = [
  "cranelift",
@@ -1103,11 +1114,11 @@ dependencies = [
  "cranelift-native",
  "cranelift-object",
  "cranelift-preopt",
- "fnv",
+ "fxhash",
  "lazy_static",
  "zhoo-analyzer",
- "zhoo-parser",
- "zhoo-util",
+ "zhoo-ast",
+ "zhoo-helper",
 ]
 
 [[package]]
@@ -1125,9 +1136,28 @@ dependencies = [
  "pollster",
  "qute",
  "zhoo-analyzer",
- "zhoo-codegen",
+ "zhoo-codegen-cranelift",
+ "zhoo-helper",
  "zhoo-parser",
- "zhoo-util",
+]
+
+[[package]]
+name = "zhoo-errors"
+version = "0.0.0"
+dependencies = [
+ "ariadne",
+ "zhoo-helper",
+ "zhoo-span",
+]
+
+[[package]]
+name = "zhoo-helper"
+version = "0.0.0"
+dependencies = [
+ "Inflector",
+ "ariadne",
+ "lazy_static",
+ "slowprint",
 ]
 
 [[package]]
@@ -1137,15 +1167,12 @@ dependencies = [
  "lalrpop",
  "lalrpop-util",
  "regex",
- "zhoo-util",
+ "zhoo-ast",
+ "zhoo-errors",
+ "zhoo-helper",
+ "zhoo-span",
 ]
 
 [[package]]
-name = "zhoo-util"
+name = "zhoo-span"
 version = "0.0.0"
-dependencies = [
- "Inflector",
- "ariadne",
- "lazy_static",
- "slowprint",
-]

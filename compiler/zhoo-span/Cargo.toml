@@ -1,0 +1,14 @@
+[package]
+authors = ["monsieurbadia <monsieurbadia@gmail.com>"]
+description = "..."
+edition = "2021"
+license = "MIT"
+name = "zhoo-span"
+readme = "README.md"
+repository = "https://github.com/monsieurbadia/zhoo"
+version.workspace = true
+
+[lib]
+doctest = false
+
+[dependencies]

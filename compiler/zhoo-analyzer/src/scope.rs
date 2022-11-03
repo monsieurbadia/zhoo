@@ -1,24 +1,28 @@
-use zhoo_parser::tree::ty::Ty;
-use zhoo_parser::tree::PBox;
+use zhoo_ast::ast::Ty;
+use zhoo_ast::ptr::Fsp;
 
-use fnv::FnvHashMap;
+use fxhash::FxHashMap;
 
 #[derive(Clone, Debug, Default)]
 struct Scope {
-  decls: FnvHashMap<String, PBox<Ty>>,
-  funs: FnvHashMap<String, (Vec<PBox<Ty>>, PBox<Ty>)>,
+  decls: FxHashMap<String, Fsp<Ty>>,
+  funs: FxHashMap<String, (Vec<Fsp<Ty>>, Fsp<Ty>)>,
 }
 
 impl Scope {
-  fn decl(&self, name: &str) -> Option<&PBox<Ty>> {
+  fn decl(&self, name: &str) -> Option<&Fsp<Ty>> {
     self.decls.get(name)
   }
 
-  fn fun(&self, name: &str) -> Option<&(Vec<PBox<Ty>>, PBox<Ty>)> {
+  fn fun(&self, name: &str) -> Option<&(Vec<Fsp<Ty>>, Fsp<Ty>)> {
     self.funs.get(name)
   }
 
-  fn set_decl(&mut self, name: String, ty: PBox<Ty>) -> Result<(), String> {
+  fn remove_decl(&mut self, name: &str) -> Option<Fsp<Ty>> {
+    self.decls.remove(name)
+  }
+
+  fn set_decl(&mut self, name: String, ty: Fsp<Ty>) -> Result<(), String> {
     match self.decls.get(&name) {
       Some(_) => Err(format!("variable `{name}` already exists")),
       None => {
@@ -31,7 +35,7 @@ impl Scope {
   fn set_fun(
     &mut self,
     name: String,
-    ty: (Vec<PBox<Ty>>, PBox<Ty>),
+    ty: (Vec<Fsp<Ty>>, Fsp<Ty>),
   ) -> Result<(), String> {
     match self.funs.get(&name) {
       Some(_) => Err(format!("function `{name}` already exists")),
@@ -59,7 +63,7 @@ impl ScopeMap {
     }
   }
 
-  pub fn decl(&self, name: &str) -> Option<&PBox<Ty>> {
+  pub fn decl(&self, name: &str) -> Option<&Fsp<Ty>> {
     for map in self.maps.iter().rev() {
       if let Some(decl) = map.decl(name) {
         return Some(decl);
@@ -69,7 +73,7 @@ impl ScopeMap {
     None
   }
 
-  pub fn fun(&self, name: &str) -> Option<&(Vec<PBox<Ty>>, PBox<Ty>)> {
+  pub fn fun(&self, name: &str) -> Option<&(Vec<Fsp<Ty>>, Fsp<Ty>)> {
     for map in self.maps.iter().rev() {
       if let Some(fun) = map.fun(name) {
         return Some(fun);
@@ -79,7 +83,17 @@ impl ScopeMap {
     None
   }
 
-  pub fn set_decl(&mut self, name: String, ty: PBox<Ty>) -> Result<(), String> {
+  pub fn remove_decl(&mut self, name: &str) -> Option<Fsp<Ty>> {
+    for map in self.maps.iter_mut().rev() {
+      if let Some(decl) = map.remove_decl(name) {
+        return Some(decl);
+      }
+    }
+
+    None
+  }
+
+  pub fn set_decl(&mut self, name: String, ty: Fsp<Ty>) -> Result<(), String> {
     match self.maps.last_mut() {
       Some(map) => map.set_decl(name, ty),
       None => Err(format!("variable `{name}` value do not exist")),
@@ -89,7 +103,7 @@ impl ScopeMap {
   pub fn set_fun(
     &mut self,
     name: String,
-    ty: (Vec<PBox<Ty>>, PBox<Ty>),
+    ty: (Vec<Fsp<Ty>>, Fsp<Ty>),
   ) -> Result<(), String> {
     match self.maps.last_mut() {
       Some(map) => map.set_fun(name, ty),

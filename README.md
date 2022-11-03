@@ -1,7 +1,7 @@
 # zhoo
 
 <p align="center">
-  <img src="./misc/logo/zhoo-logo-black.png" />
+  <img src="./src/misc/logo/zhoo-logo-black.png" />
 </p>
 
 ...
@@ -27,25 +27,25 @@ zhoo's syntax is innovative, compact, elegant and cames with nice features. keyw
 **while**
 
 <p align="center">
-  <img src="./misc/overview/zhoo-arrow-while.png" />
+  <img src="./src/misc/overview/zhoo-arrow-while.png" />
 </p>
 
 **loop**
 
 <p align="center">
-  <img src="./misc/overview/zhoo-loop.png" />
+  <img src="./src/misc/overview/zhoo-loop.png" />
 </p>
 
 ## currying
 
 <p align="center">
-  <img src="./misc/overview/zhoo-currying.png" />
+  <img src="./src/misc/overview/zhoo-currying.png" />
 </p>
 
 ## fizz buzz
 
 <p align="center">
-  <img src="./misc/overview/zhoo-fizz-buzz.png" />
+  <img src="./src/misc/overview/zhoo-fizz-buzz.png" />
 </p>
 
 ## embedded unit testing
@@ -53,7 +53,7 @@ zhoo's syntax is innovative, compact, elegant and cames with nice features. keyw
 a good way to do unit tests with functionality adapted to the comfort of the programmer. logic and testing in the same file, to change files as little as possible: very useful for tdd enthusiasts.
 
 <p align="center">
-  <img src="./misc/overview/zhoo-unit-testing.png" />
+  <img src="./src/misc/overview/zhoo-unit-testing.png" />
 </p>
 
 ## easy webassembly
@@ -62,7 +62,7 @@ bring your program to the web will be super simple. add the `wasm` keyword et vo
 *but keep in mind that wasm can be use to do some other stuff than web ;)*
 
 <p align="center">
-  <img src="./misc/overview/zhoo-wasm.png" />
+  <img src="./src/misc/overview/zhoo-wasm.png" />
 </p>
 
 ## error messages
@@ -78,7 +78,7 @@ for example, this program:
 will raise the following error messages:
 
 <p align="center">
-  <img src="./misc/overview/zhoo-report-errors.png" />
+  <img src="./src/misc/overview/zhoo-report-errors.png" />
 </p>
 
 ## compiler phases
@@ -140,7 +140,7 @@ your output should looks like this:
 
     🤖 running the program
 
-    hello, hello! 👽
+    👋 🌍 👽
 
 👋 welcome to the zhoo gang   
 🥳 *we are proud to have you as a member*   

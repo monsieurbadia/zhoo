@@ -1,5 +1,5 @@
 fun main() {
-  mut x : int = 0;
+  mut x: int = 0;
 
   loop {
     if x == 3 {

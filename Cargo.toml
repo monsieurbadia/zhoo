@@ -2,7 +2,7 @@
 members = [
   "compiler/zhoo",
   "library/core",
-  "tools/loaders",
+  "src/tools/loaders",
 ]
 
 [workspace.package]

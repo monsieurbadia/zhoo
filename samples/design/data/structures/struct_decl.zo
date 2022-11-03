@@ -3,7 +3,7 @@ struct Foo {
   bar: int,
 }
 
-impl Foo {
+apply Foo {
   pub fun new(bar: int): Me {
     Me { bar }
   }

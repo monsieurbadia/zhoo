@@ -1,4 +1,4 @@
--- unsupported
+-- unimplemented
 fun fibonacci(n: int): int {
 	match n {
 		0 => 0,
@@ -7,6 +7,6 @@ fun fibonacci(n: int): int {
 	}
 }
 
-fun main(): int {
-  fibonacci(23)
+fun main() {
+  printiln(fibonacci(23));
 }

@@ -15,11 +15,10 @@ doctest = false
 clap = {version = "4.0.10", features = ["derive"]}
 flume = "0.10.14"
 lazy_static = "1.4.0"
-loaders = {path = "../../tools/loaders"}
+loaders = {path = "../../src/tools/loaders"}
 pollster = "0.2.5"
 qute = "0.0.13"
-# zhoo = {path = "../zhoo"}
 zhoo-analyzer = {path = "../zhoo-analyzer"}
-zhoo-codegen = {path = "../zhoo-codegen"}
+zhoo-codegen-cranelift = {path = "../zhoo-codegen-cranelift"}
+zhoo-helper = {path = "../zhoo-helper"}
 zhoo-parser = {path = "../zhoo-parser"}
-zhoo-util = {path = "../zhoo-util"}

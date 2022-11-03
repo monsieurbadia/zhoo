@@ -1,7 +1,9 @@
 fun main() {
-  mut x: int = 1;
-  while x < 100_000 {
+  mut x: int = 0;
+  while x < 1_000 {
     printiln(x);
     x += 1;
   }
+
+  println("okokokokokk");
 }

@@ -17,4 +17,7 @@ lalrpop = "0.19.8"
 [dependencies]
 lalrpop-util = {version = "0.19.8", features = ["lexer"]}
 regex = "1"
-zhoo-util = {path = "../zhoo-util"}
+zhoo-ast = {path = "../zhoo-ast"}
+zhoo-errors = {path = "../zhoo-errors"}
+zhoo-helper = {path = "../zhoo-helper"}
+zhoo-span = {path = "../zhoo-span"}

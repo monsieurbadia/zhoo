@@ -1,0 +1,18 @@
+[package]
+authors = ["monsieurbadia <monsieurbadia@gmail.com>"]
+description = "..."
+edition = "2021"
+license = "MIT"
+name = "zhoo-helper"
+readme = "README.md"
+repository = "https://github.com/monsieurbadia/zhoo"
+version.workspace = true
+
+[lib]
+doctest = false
+
+[dependencies]
+Inflector = "0.11.4"
+ariadne = "0.1.5"
+lazy_static = "1.4.0"
+slowprint = "0.1.0"

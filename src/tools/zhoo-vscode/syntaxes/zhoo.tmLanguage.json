@@ -1,0 +1,242 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "zhoo",
+	"scopeName": "source.zhoo",
+	"patterns": [
+		{
+			"comment": "booleans",
+			"name": "constant.language.boolean.zhoo",
+			"match": "\\b(true|false)\\b"
+		},
+		{
+			"comment": "integers literal (dec)",
+			"name": "constant.numeric.integer.decimal.zhoo",
+			"match": "\\b([0-9][0-9_]*)\\b"
+		},
+		{
+			"comment": "integers literal (hex)",
+			"name": "constant.numeric.integer.hexadecimal.zhoo",
+			"match": "\\b(0x[a-fA-F0-9_]+)\\b"
+		},
+		{
+			"comment": "integers literal (oct)",
+			"name": "constant.numeric.integer.octal.zhoo",
+			"match": "\\b(0o[0-7_]+)\\b"
+		},
+		{
+			"comment": "integers literal (bin)",
+			"name": "constant.numeric.integer.binary.zhoo",
+			"match": "\\b(0b[01_]+)\\b"
+		},
+		{
+			"comment": "real literal",
+			"name": "constant.numeric.real.zhoo",
+			"match": "\\b[0-9][0-9_]*\\.[0-9][0-9_]*([eE][+-]?[0-9_]+)?(f32|f64)?\\b"
+		},
+		{
+			"comment": "single-quote string literal (character)",
+			"name": "string.quoted.single.zhoo",
+			"match": "b?'([^'\\\\]|\\\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.))'"
+		},
+		{
+			"include": "#string_literal"
+		},
+		{
+			"comment": "control flow keywords",
+			"name": "keyword.control.zhoo",
+			"match": "\\b(await|break|continue|each|else|for|if|is|loop|match|return|until|when|while)\\b"
+		},
+		{
+			"comment": "keyword",
+			"name": "keyword.other.zhoo",
+			"match": "\\b(apply|async|and|ext|fn|imu|load|macro|mock|mut|pack|pub|ref|test|unit|unsafe|val|wasm)\\b"
+		},
+		{
+			"include": "#line_comment"
+		},
+		{
+			"include": "#line_doc_comment"
+		},
+		{
+			"include": "#me"
+		},
+		{
+			"comment": "miscellaneous op",
+			"name": "keyword.operator.misc.zhoo",
+			"match": "(->|=>|::|\\?)"
+		},
+		{
+			"comment": "comparison op",
+			"name": "keyword.operator.comparison.zhoo",
+			"match": "(&&|\\|\\||==|!=)"
+		},
+		{
+			"comment": "assignment op",
+			"name": "keyword.operator.assignment.zhoo",
+			"match": "(\\+=|-=|/=|\\*=|%=|\\^=|&=|\\|=|<<=|>>=|=)"
+		},
+		{
+			"comment": "arithmetic op",
+			"name": "keyword.operator.arithmetic.zhoo",
+			"match": "(!|\\+|-|/|\\*|%|\\^|&|\\||<<|>>)"
+		},
+		{
+			"comment": "comparison op",
+			"name": "keyword.operator.comparison.zhoo",
+			"match": "(<=|>=|<|>)"
+		},
+		{
+			"include": "#core_types"
+		},
+		{
+			"comment": "function call",
+			"match": "\\b([A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+)\\s*\\(",
+			"captures": {
+				"1": {
+					"name": "entity.name.function.zhoo"
+				}
+			}
+		},
+		{
+			"comment": "function call with type parameters",
+			"begin": "\\b([A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+)\\s*(::)(?=\\s*<.*>\\s*\\()",
+			"end": "\\(",
+			"captures": {
+				"1": {
+					"name": "entity.name.function.zhoo"
+				},
+				"2": {
+					"name": "keyword.operator.misc.zhoo"
+				}
+			},
+			"patterns": []
+		},
+		{
+			"comment": "function definition",
+			"begin": "\\b(fun)\\s+([A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+)",
+			"end": "[\\{;]",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.other.fun.zhoo"
+				},
+				"2": {
+					"name": "entity.name.function.zhoo"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#line_comment"
+				},
+				{
+					"include": "#line_doc_comment"
+				},
+				{
+					"include": "#me"
+				},
+				{
+					"include": "#core_types"
+				},
+				{
+					"comment": "function arguments",
+					"match": "\bfun\b",
+					"name": "keyword.other.fun.zhoo"
+				}
+			]
+		},
+		{
+			"comment": "type declaration",
+			"begin": "\\b(enum|struct|behavior|union)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+			"end": "[\\{\\(;]",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.zhoo"
+				},
+				"2": {
+					"name": "entity.name.type.zhoo"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#line_comment"
+				},
+				{
+					"include": "#line_doc_comment"
+				},
+				{
+					"include": "#and"
+				},
+				{
+					"include": "#core_types"
+				}
+			]
+		},
+		{
+			"comment": "type alias",
+			"begin": "\\b(type)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+			"end": ";",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.zhoo"
+				},
+				"2": {
+					"name": "entity.name.type.zhoo"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#line_comment"
+				},
+				{
+					"include": "#line_doc_comment"
+				},
+				{
+					"include": "#core_types"
+				}
+			]
+		}
+	],
+	"repository": {
+		"line_comment": {
+			"comment": "line comment",
+			"name": "comment.line.double-slash.zhoo",
+			"begin": "--",
+			"end": "$"
+		},
+		"line_doc_comment": {
+			"comment": "line doc comment",
+			"name": "comment.line.documentation.zhoo",
+			"begin": "-!",
+			"end": "$"
+		},
+		"escaped_character": {
+			"name": "constant.character.escape.zhoo",
+			"match": "\\\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)"
+		},
+		"string_literal": {
+			"comment": "double-quote string literal",
+			"name": "string.quoted.double.zhoo",
+			"begin": "b?\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"include": "#escaped_character"
+				}
+			]
+		},
+		"me": {
+			"comment": "me variable",
+			"name": "variable.language.zhoo",
+			"match": "\\b(me|Me)\\b"
+		},
+		"and": {
+			"comment": "and keyword",
+			"name": "keyword.other.zhoo",
+			"match": "\\b(and)\\b"
+		},
+		"core_types": {
+			"comment": "built-in/core type",
+			"name": "support.type.primitive.zhoo",
+			"match": "\\b(bool|char|int|real|str)\\b"
+		}
+	}
+}

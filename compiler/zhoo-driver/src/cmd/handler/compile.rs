@@ -8,7 +8,6 @@ use crate::cmd::settings::compile::Settings;
 use std::any::Any;
 use std::thread;
 
-/// an instance of the `compile` command
 #[derive(clap::Parser)]
 pub struct Compile {
   /// print the AST of the program
@@ -29,7 +28,6 @@ pub struct Compile {
 }
 
 impl Compile {
-  /// handle the `compile` command
   pub async fn handle(&self) {
     use crate::cmd::settings::Backend;
     use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
@@ -41,7 +39,7 @@ impl Compile {
       _no_motion: self.no_motion,
       input: self.input.to_string(),
       ir: self.ir,
-      _backend: Backend::from(self.backend.to_string()),
+      _backend: Backend::from(&self.backend),
     };
 
     match compile(settings).await {
@@ -57,12 +55,12 @@ async fn compile(
   thread::spawn(move || compiling(settings)).join()
 }
 
-/// compile a `zhoo` program
 fn compiling(settings: Settings) {
-  use loaders::spin;
   use zhoo_analyzer::analyzer;
-  use zhoo_codegen::codegen;
+  use zhoo_codegen_cranelift::cranelift;
   use zhoo_parser::parser;
+
+  use loaders::spin;
 
   use std::time::Duration;
 
@@ -104,7 +102,7 @@ fn compiling(settings: Settings) {
 
   // -- back --
 
-  let codegen = codegen::cranelift::aot::generate(&program);
+  let codegen = cranelift::generate(&program);
 
   match codegen.build(settings.ir) {
     Ok(done) => {

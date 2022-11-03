@@ -1,4 +1,4 @@
--- unsupported
+-- unimplemented
 fun fizzbuzz(x: int) {
   if x % 15 == 0 {
     println("fizzbuzz");
@@ -7,7 +7,7 @@ fun fizzbuzz(x: int) {
   } else if x % 5 == 0 {
     println("buzz");
   } else {
-    println("{x}");
+    printiln(x);
   }
 }
 

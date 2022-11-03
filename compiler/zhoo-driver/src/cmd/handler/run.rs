@@ -1,12 +1,10 @@
 use std::any::Any;
 use std::thread;
 
-/// an instance of the `run` command
 #[derive(clap::Parser)]
 pub struct Run;
 
 impl Run {
-  /// handle the `run` command
   pub async fn handle(&self) {
     use crate::common::{EXIT_FAILURE, EXIT_SUCCESS};
 
@@ -23,9 +21,8 @@ async fn run() -> Result<(), Box<(dyn Any + Send + 'static)>> {
   thread::spawn(running).join()
 }
 
-/// run a `zhoo` program
 fn running() {
-  use zhoo_util::constant::{ENTRY_POINT, PATH_OUTPUT_DIRECTORY};
+  use zhoo_helper::constant::{ENTRY_POINT, PATH_OUTPUT_DIRECTORY};
 
   use std::process::Command;
   use std::str;

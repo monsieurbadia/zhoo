@@ -1,0 +1,17 @@
+[package]
+authors = ["monsieurbadia <monsieurbadia@gmail.com>"]
+description = "..."
+edition = "2021"
+license = "MIT"
+name = "zhoo-ast"
+readme = "README.md"
+repository = "https://github.com/monsieurbadia/zhoo"
+version.workspace = true
+
+[lib]
+doctest = false
+
+[dependencies]
+zhoo-errors = {path = "../zhoo-errors"}
+zhoo-helper = {path = "../zhoo-helper"}
+zhoo-span = {path = "../zhoo-span"}

@@ -2,6 +2,4 @@ fun main() {
   imu x := 1 & 2;
   imu y := 3 | 4;
   imu z := 5 ^ 6;
-
-  println(z)
 }

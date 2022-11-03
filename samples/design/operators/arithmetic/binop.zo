@@ -4,6 +4,4 @@ fun main() {
   imu c := b * 4;
   imu d := c / 5;
   imu e := d % 6;
-
-  printint(f);
 }

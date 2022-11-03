@@ -38,7 +38,7 @@ impl VariableBuilder {
     value: Value,
     ty: types::Type,
   ) -> Variable {
-    let variable = Variable::with_u32(self.index);
+    let variable = Variable::from_u32(self.index);
 
     builder.declare_var(variable, ty);
     builder.def_var(variable, value);
